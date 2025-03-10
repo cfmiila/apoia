@@ -10,10 +10,76 @@ generator client {
 }
 
 model Usuario {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  nome    String?
-  role    Role     @default(USER)
-  posts   Post[]
-  profile Profile?
+  id          Int        @id @default(autoincrement())
+  nome        String
+  email       String     @unique
+  senha       String
+  tipo        Tipo       @default(parceiro)
+  dataCriacao DateTime   @default(now())
+  doacoes     Doacao[]
+}
+
+model Ong {
+  id            Int        @id @default(autoincrement())
+  nome          String
+  email         String     @unique
+  senha         String
+  telefone      String?
+  descricao     String?
+  status        Status     @default(pendente)
+  dataCadastro  DateTime   @default(now())
+  campanhas     Campanha[]
+}
+
+model Campanha {
+  id           Int        @id @default(autoincrement())
+  nome         String
+  descricao    String?
+  meta         Decimal    @db.Decimal(10, 2)
+  arrecadado   Decimal    @db.Decimal(10, 2) @default(0.00)
+  status       Status     @default(ativa)
+  dataInicio   DateTime   @default(now())
+  dataFim      DateTime?
+  ong          Ong        @relation(fields: [idOng], references: [id])
+  idOng        Int
+  doacoes      Doacao[]
+}
+
+model Doacao {
+  id           Int        @id @default(autoincrement())
+  valor        Decimal    @db.Decimal(10, 2)
+  dataDoacao   DateTime   @default(now())
+  usuario      Usuario    @relation(fields: [idUsuario], references: [id])
+  idUsuario    Int
+  campanha     Campanha   @relation(fields: [idCampanha], references: [id])
+  idCampanha   Int
+  transacao    Transacao?
+}
+
+model Transacao {
+  id             Int        @id @default(autoincrement())
+  metodoPagamento MetodoPagamento
+  codigoTransacao String?   @unique
+  status         Status     @default(pendente)
+  dataPagamento  DateTime?
+  doacao         Doacao     @relation(fields: [idDoacao], references: [id])
+  idDoacao       Int
+}
+
+enum Tipo {
+  parceiro
+  ong
+  admin
+}
+
+enum Status {
+  pendente
+  aprovada
+  rejeitada
+  ativa
+  encerrada
+}
+
+enum MetodoPagamento {
+  pix
 }
