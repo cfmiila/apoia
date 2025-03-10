@@ -46,7 +46,7 @@ model Campanha {
 }
 
 model Doacao {
-  id           Int        @id @default(autoincrement())
+  id           Int        @id  @default(autoincrement())
   valor        Decimal    @db.Decimal(10, 2)
   dataDoacao   DateTime   @default(now())
   usuario      Usuario    @relation(fields: [idUsuario], references: [id])
@@ -63,7 +63,7 @@ model Transacao {
   status         Status     @default(pendente)
   dataPagamento  DateTime?
   doacao         Doacao     @relation(fields: [idDoacao], references: [id])
-  idDoacao       Int
+  idDoacao       Int @unique
 }
 
 enum Tipo {
