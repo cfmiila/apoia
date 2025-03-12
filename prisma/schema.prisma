@@ -11,16 +11,19 @@ generator client {
 
 model Usuario {
   id          Int        @id @default(autoincrement())
+  cpf         String     @unique
   nome        String
   email       String     @unique
   senha       String
   tipo        Tipo       @default(parceiro)
   dataCriacao DateTime   @default(now())
   doacoes     Doacao[]
+  
 }
 
 model Ong {
   id            Int        @id @default(autoincrement())
+  cnpj          String     @unique
   nome          String
   email         String     @unique
   senha         String
