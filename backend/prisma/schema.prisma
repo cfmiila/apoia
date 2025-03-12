@@ -23,8 +23,8 @@ model Usuario {
 
 model Ong {
   id            Int        @id @default(autoincrement())
-  cnpj          String     @unique
   nome          String
+  cnpj          String     @unique
   email         String     @unique
   senha         String
   telefone      String?
