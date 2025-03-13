@@ -12,6 +12,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!'); // aqui fiz só pela maldição, mas depois mudaremos
 });
 
+
 //usuario
 app.post('/usuario/create', async (req, res) => {
   const { cpf, nome, email, senha, tipo } = req.body;
@@ -52,6 +53,77 @@ app.post('/usuario/create', async (req, res) => {
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
     res.status(500).json({ error: 'Erro ao criar usuário', details: error.message });
+  }
+});
+
+//read
+
+app.get('/usuario/list', async (req, res) => {
+  try {
+    const usuarios = await prisma.usuario.findMany();
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error('Erro ao listar usuários:', error);
+    res.status(500).json({ error: 'Erro ao listar usuários', details: error.message });
+  }
+});
+
+//buscar o Id de algum usuário
+
+app.get('/usuario/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { id: parseInt(id) } });
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    res.status(200).json(usuario);
+  } catch (error) {
+    console.error('Erro ao buscar usuário:', error);
+    res.status(500).json({ error: 'Erro ao buscar usuário', details: error.message });
+  }
+});
+
+//editar usuario (update)
+
+app.put('/usuario/update/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nome, email, senha, tipo } = req.body;
+
+  try {
+    const usuarioExistente = await prisma.usuario.findUnique({ where: { id: parseInt(id) } });
+    if (!usuarioExistente) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const usuarioAtualizado = await prisma.usuario.update({
+      where: { id: parseInt(id) },
+      data: { nome, email, senha, tipo },
+    });
+
+    res.status(200).json(usuarioAtualizado);
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    res.status(500).json({ error: 'Erro ao atualizar usuário', details: error.message });
+  }
+});
+//delete usuário
+app.delete('/usuario/delete/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const usuarioExistente = await prisma.usuario.findUnique({ where: { id: parseInt(id) } });
+    if (!usuarioExistente) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    await prisma.usuario.delete({ where: { id: parseInt(id) } });
+
+    res.status(200).json({ message: 'Usuário deletado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar usuário:', error);
+    res.status(500).json({ error: 'Erro ao deletar usuário', details: error.message });
   }
 });
 
@@ -108,6 +180,49 @@ app.post('/ong/create', async (req, res) => {
     res.status(500).json({ error: 'Erro ao criar ONG', details: error.message });
   }
 });
+
+//editar (ong)
+
+app.put('/ong/update/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nome, email, senha, cnpj, telefone, descricao } = req.body;
+
+  try {
+    const ongExistente = await prisma.ong.findUnique({ where: { id: parseInt(id) } });
+    if (!ongExistente) {
+      return res.status(404).json({ error: 'ONG não encontrada' });
+    }
+
+    const ongAtualizada = await prisma.ong.update({
+      where: { id: parseInt(id) },
+      data: { nome, email, senha, cnpj, telefone, descricao },
+    });
+
+    res.status(200).json(ongAtualizada);
+  } catch (error) {
+    console.error('Erro ao atualizar ONG:', error);
+    res.status(500).json({ error: 'Erro ao atualizar ONG', details: error.message });
+  }
+});
+//deletar ONG
+app.delete('/ong/delete/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const ongExistente = await prisma.ong.findUnique({ where: { id: parseInt(id) } });
+    if (!ongExistente) {
+      return res.status(404).json({ error: 'ONG não encontrada' });
+    }
+
+    await prisma.ong.delete({ where: { id: parseInt(id) } });
+
+    res.status(200).json({ message: 'ONG deletada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar ONG:', error);
+    res.status(500).json({ error: 'Erro ao deletar ONG', details: error.message });
+  }
+});
+
 //campanha
 app.post('/campanha/create', async (req, res) => {
   const { nome, descricao, meta, idOng } = req.body;
