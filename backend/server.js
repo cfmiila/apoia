@@ -1,9 +1,13 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
+
+require('dotenv').config(); 
+const express = require('express'); 
+const { PrismaClient } = require('@prisma/client'); 
 
 const prisma = new PrismaClient();
 const app = express();
 const port = 3100;
+
+
 
 app.use(express.json());
 
@@ -174,13 +178,13 @@ app.post('/ong/create', async (req, res) => {
       data: { nome, email, cnpj, senha, telefone, descricao },
     });
 
-    res.status(200).json(ong);
+    // Retorna a mensagem de sucesso e a ONG criada
+    res.status(200).json({ message: 'ONG cadastrada com sucesso', ong });
   } catch (error) {
     console.error('Erro ao criar ONG:', error);
     res.status(500).json({ error: 'Erro ao criar ONG', details: error.message });
   }
 });
-
 //editar (ong)
 
 app.put('/ong/update/:id', async (req, res) => {
@@ -291,6 +295,10 @@ app.post('/doacao/create', async (req, res) => {
 
 //falta eu colocar o da transação
 
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
+  });
+}
+
+module.exports = app; 
