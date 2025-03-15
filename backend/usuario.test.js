@@ -124,7 +124,6 @@ describe('Testes para o endpoint /ong/create', () => {
     expect(response.body.error).toBe('Email já cadastrado');
   });
 
-  // Fecha a conexão do Prisma após os testes
   afterAll(async () => {
     await prisma.$disconnect();
   });
