@@ -1,4 +1,6 @@
-
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const SECRET_KEY = process.env.SECRET_KEY || ''; 
 require('dotenv').config(); 
 const express = require('express'); 
 const { PrismaClient } = require('@prisma/client'); 
@@ -42,21 +44,47 @@ app.post('/usuario/create', async (req, res) => {
       return res.status(400).json({ error: 'CPF já cadastrado' });
     }
 
-    // vai verificar se o email já existe
     const emailExistente = await prisma.usuario.findUnique({ where: { email } });
     if (emailExistente) {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
-
     
+    
+    // Criptografar a senha
+    const senhaCriptografada = await bcrypt.hash(senha, 10);
+
     const usuario = await prisma.usuario.create({
-      data: { cpf, nome, email, senha, tipo },
+      data: { cpf, nome, email, senha: senhaCriptografada, tipo },
     });
 
     res.status(200).json(usuario);
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
     res.status(500).json({ error: 'Erro ao criar usuário', details: error.message });
+  }
+});
+app.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    if (!usuario) {
+      return res.status(400).json({ error: 'Email ou senha incorretos' });
+    }
+
+    // Verificar a senha
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) {
+      return res.status(400).json({ error: 'Email ou senha incorretos' });
+    }
+
+    // Gerar token JWT
+    const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, SECRET_KEY, { expiresIn: '1h' });
+
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error('Erro ao fazer login:', error);
+    res.status(500).json({ error: 'Erro ao fazer login', details: error.message });
   }
 });
 
