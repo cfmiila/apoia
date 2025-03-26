@@ -24,22 +24,22 @@ export default function TestimonialSection() {
   const [selected, setSelected] = useState(0);
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-6 lg:px-16 text-center">
-        <h4>Depoimentos</h4>
-        <h2 className="text-3xl font-bold text-blue-950 mb-8">
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-6 lg:px-16">
+        <h4 className="text-center">Depoimentos</h4>
+        <h2 className="text-4xl md:text-5xl font-bold text-blue-950 text-center mb-10">
           O Que As Pessoas Dizem Sobre Nós.
         </h2>
 
-        <div className="relative bg-gray-100 p-6 rounded-lg shadow-lg w-full max-w-lg mx-auto">
-          <div className="flex justify-center">
-            <div className="w-16 h-16 overflow-hidden rounded-full border-4 border-blue-500">
+        <div className="relative flex flex-col md:flex-row gap-8 items-center justify-center">
+          <div className="bg-gray-100 p-6 rounded-xl shadow-lg max-w-lg">
+            <div className="flex items-center gap-4 mb-4">
               <Image
                 src={testimonials[selected].image}
                 alt={testimonials[selected].name}
                 width={64} // Tamanho fixo da imagem
                 height={64}
-                className="object-cover w-full h-full"
+                className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover"
               />
             </div>
           </div>
@@ -47,7 +47,7 @@ export default function TestimonialSection() {
           <p className="text-lg text-gray-700 italic mt-4">
             {testimonials[selected].message}
           </p>
-          <h3 className="font-semibold text-blue-950 mt-3">
+          <h3 className="text-xl font-semibold text-blue-900">
             {testimonials[selected].name}
           </h3>
           <p className="text-gray-500 text-sm">{testimonials[selected].role}</p>

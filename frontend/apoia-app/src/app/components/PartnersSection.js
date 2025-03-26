@@ -10,13 +10,13 @@ const partners = [
 
 export default function PartnersSection() {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-6 lg:px-16 text-center">
-        <h2 className="text-3xl font-bold text-blue-950 mb-8">
+        <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-10">
           Nossos Parceiros
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 items-center justify-center">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-center">
           {partners.map((partner, index) => (
             <div
               key={index}
@@ -27,7 +27,7 @@ export default function PartnersSection() {
                 alt={partner.name}
                 width={120}
                 height={120}
-                className="object-contain w-[100px] h-[100px]"
+                className="h-24 md:h-32 object-contain mx-auto"
               />
             </div>
           ))}

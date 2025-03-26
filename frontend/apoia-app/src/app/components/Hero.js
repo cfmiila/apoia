@@ -1,5 +1,4 @@
 import Image from "next/image";
-import imagem1 from "../../../public/Apoia.png";
 
 export default function Hero() {
   return (
@@ -19,12 +18,13 @@ export default function Hero() {
       {/* Sobreposição escura para contraste */}
       <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
 
-      {/* Navbar - Clicável */}
-      <nav className="relative w-full flex items-center justify-between px-8 py-4 z-10">
+      {/* Navbar - Agora sem fundo */}
+      <nav className="relative w-full flex items-center justify-between px-8 py-3 z-10">
         <div>
-          <Image src="/Apoia.png" alt="Imagem logo" width={150} height={150} />
+          {/* Aumentei a logo */}
+          <Image src="/Apoia.png" alt="Imagem logo" width={180} height={180} />
         </div>
-        <div className="flex items-center space-x-6 text-white">
+        <div className="flex items-center space-x-6 text-white text-lg">
           <a href="#" className="hover:text-blue-300 transition">
             Como funciona
           </a>
@@ -39,36 +39,36 @@ export default function Hero() {
           </a>
           <a
             href="#"
-            className="px-4 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition"
+            className="px-6 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition"
           >
             Login
           </a>
           <a
             href="#"
-            className="px-4 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition"
+            className="px-6 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition"
           >
             Inscreva-se
           </a>
         </div>
       </nav>
 
-      {/* Hero Section - Agora mais para cima */}
-      <section className="relative z-10 flex flex-col items-center justify-center  text-center text-white px-6 pt-40">
-        <div className="max-w-6xl">
-          <h3 className="text-white font-bold uppercase">
+      {/* Hero Section */}
+      <section className="relative z-10 flex flex-col items-center justify-center text-center text-white px-6 pt-32">
+        <div className="max-w-5xl">
+          <h3 className="text-white font-bold uppercase text-xl tracking-wider">
             ONGS E DOADORES EM TODO MUNDO
           </h3>
-          <h1 className="text-6xl font-extrabold leading-tight mt-2">
-            <span className="text-blue-300">Conecte-se a ONGs</span> e Faça a
-            Diferença!
+          <h1 className="text-6xl md:text-7xl font-extrabold leading-tight mt-4">
+            <span className="text-blue-300">Conecte-se a ONGs</span> <br /> e
+            Faça a Diferença!
           </h1>
-          <p className="text-lg text-gray-200 mt-4">
+          <p className="text-xl text-gray-200 mt-6">
             Apoie causas que transformam vidas! Cadastre-se como doador ou ONG e
             ajude de forma rápida, segura e transparente.
           </p>
           <a
             href="#"
-            className="mt-6 inline-block px-6 py-3 bg-blue-600 text-white font-semibold text-lg rounded-md shadow-lg hover:bg-blue-700 transition"
+            className="mt-8 inline-block px-8 py-4 bg-blue-600 text-white font-semibold text-xl rounded-md shadow-lg hover:bg-blue-700 transition"
           >
             Encontre uma Causa para Apoiar
           </a>

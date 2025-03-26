@@ -1,5 +1,7 @@
+"use client";
 import AboutUs from "./components/AboutUs";
 import FeaturedCauses from "./components/FeaturedCauses";
+import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import PartnersSection from "./components/PartnersSection";
@@ -16,6 +18,7 @@ export default function Home() {
       <TestimonialSection />
       <PartnersSection />
       <SignupCTA />
+      <Footer />
     </main>
   );
 }
