@@ -9,7 +9,11 @@ const prisma = new PrismaClient();
 const app = express();
 const port = 3100;
 
-
+// rotas
+const loginDoadorRouter = require('./loginDoador');
+const loginOngRouter = require('./loginOng');
+app.use(loginDoadorRouter);
+app.use(loginOngRouter);
 
 app.use(express.json());
 
@@ -18,11 +22,20 @@ app.get('/', (req, res) => {
   res.send('Hello World!'); // aqui fiz só pela maldição, mas depois mudaremos
 });
 
+function validarSenhaForte(senha) {
+  const regexSenha = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return regexSenha.test(senha);
+}
 
 //usuario
 app.post('/usuario/create', async (req, res) => {
   const { cpf, nome, email, senha, tipo } = req.body;
 
+  if (!validarSenhaForte(senha)){
+    return res.status(400).json({
+      error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais'
+    });
+  }
   // validação do CPF
   if (!cpf || cpf.length !== 11 || !/^\d+$/.test(cpf)) {
     return res.status(400).json({ error: 'CPF inválido' });
@@ -180,7 +193,11 @@ const validateOngData = ({ nome, email, cnpj }) => {
 
 app.post('/ong/create', async (req, res) => {
   const { nome, email, senha, cnpj, telefone, descricao } = req.body;
-
+  if (!validarSenhaForte(senha)) {
+    return res.status(400).json({ 
+      error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais' 
+    });
+  }
   const validation = validateOngData(req.body);
   if (!validation.isValid) {
     return res.status(400).json({ error: validation.error });
