@@ -15,8 +15,12 @@ export default function CadastroONG() {
             <Input type="text" placeholder="Nome da ONG" className="rounded-2xl" />
             <Label htmlFor="email" className="text-lg font-light">Email</Label>
             <Input type="email" placeholder="Email" className="rounded-2xl" />
+            <Label htmlFor="cnpj" className="text-lg font-light">CNPJ</Label>
+            <Input type="text" placeholder="cnpj" className="rounded-2xl" />
             <Label htmlFor="telefone" className="text-lg font-light">Telefone</Label>
             <Input type="text" placeholder="Telefone" className="rounded-2xl" />
+            <Label htmlFor="descricao" className="text-lg font-light">Descrição</Label>
+            <Input type="text" placeholder="Descrição" className="rounded-2xl" />
             <Label htmlFor="senha" className="text-lg font-light">Senha</Label>
             <Input type="password" placeholder="Senha" className="rounded-2xl" />
             <Button className="bg-blue-600 text-white p-3 rounded-2xl">Cadastrar</Button>
