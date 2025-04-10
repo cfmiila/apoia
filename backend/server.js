@@ -3,10 +3,12 @@ const bcrypt = require('bcrypt');
 const SECRET_KEY = process.env.SECRET_KEY || ''; 
 require('dotenv').config(); 
 const express = require('express'); 
+const cors = require('cors');
 const { PrismaClient } = require('@prisma/client'); 
 
 const prisma = new PrismaClient();
 const app = express();
+app.use(cors());
 const port = 3100;
 
 // rotas
@@ -14,6 +16,9 @@ const loginDoadorRouter = require('./loginDoador');
 const loginOngRouter = require('./loginOng');
 app.use(loginDoadorRouter);
 app.use(loginOngRouter);
+
+const cadastroONGRouter=require('./cadastroOng');
+app.use(cadastroONGRouter);
 
 app.use(express.json());
 
