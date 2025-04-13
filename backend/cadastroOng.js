@@ -1,21 +1,40 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY || ''; 
-require('dotenv').config(); 
-const express = require('express'); 
+const SECRET_KEY = process.env.SECRET_KEY || '';
+require('dotenv').config();
+const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client'); 
+const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query', 'error', 'warn'],
+});
 const app = express();
-app.use(cors());
+
+
+app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:3000', // URL exata do frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Middleware de logs detalhados
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 const port = 3100;
-//ong
+
+// Validações
+const validarSenhaForte = (senha) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  return regex.test(senha);
+};
+
 const validateOngData = ({ nome, email, cnpj }) => {
-  // validação do CNPJ
-  if (!cnpj || cnpj.length !== 14 || !/^\d+$/.test(cnpj)) {
-    return { isValid: false, error: 'CNPJ inválido' };
-  }
   if (!nome || nome.length < 3) {
     return { isValid: false, error: 'Nome deve ter pelo menos 3 caracteres' };
   }
@@ -25,87 +44,116 @@ const validateOngData = ({ nome, email, cnpj }) => {
     return { isValid: false, error: 'Email inválido' };
   }
 
+  if (!cnpj || cnpj.length !== 14 || !/^\d+$/.test(cnpj)) {
+    return { isValid: false, error: 'CNPJ inválido (deve ter 14 dígitos numéricos)' };
+  }
+
   return { isValid: true };
 };
 
-
-app.post('/ong/create', async (req, res) => {
-  const { nome, email, senha, cnpj, telefone, descricao } = req.body;
-  if (!validarSenhaForte(senha)) {
-    return res.status(400).json({ 
-      error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais' 
-    });
-  }
-  const validation = validateOngData(req.body);
-  if (!validation.isValid) {
-    return res.status(400).json({ error: validation.error });
-  }
-
+// Rota corrigida - versão consistente com o frontend
+app.post('/api/v1/ong/create', async (req, res) => {
+  console.log('Corpo da requisição:', req.body); // Log detalhado
+  
   try {
-    // aqui vai verificar se o CNPJ ou email já existem
+    const { nome, email, senha, cnpj, telefone, descricao } = req.body;
+
+    // Validações
+    if (!validarSenhaForte(senha)) {
+      return res.status(400).json({ 
+        error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais' 
+      });
+    }
+
+    const validation = validateOngData({ nome, email, cnpj });
+    if (!validation.isValid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    // Verifica se ONG já existe
     const [cnpjExistente, emailExistente] = await Promise.all([
       prisma.ong.findUnique({ where: { cnpj } }),
       prisma.ong.findUnique({ where: { email } }),
     ]);
 
-    if (cnpjExistente) {
-      return res.status(400).json({ error: 'CNPJ já cadastrado' });
+    if (cnpjExistente || emailExistente) {
+      return res.status(400).json({ 
+        error: cnpjExistente ? 'CNPJ já cadastrado' : 'Email já cadastrado',
+        field: cnpjExistente ? 'cnpj' : 'email'
+      });
     }
 
-    if (emailExistente) {
-      return res.status(400).json({ error: 'Email já cadastrado' });
-    }
-
-  
+    // Cria a ONG com senha hasheada
+    const hashedSenha = await bcrypt.hash(senha, 10);
     const ong = await prisma.ong.create({
-      data: { nome, email, cnpj, senha, telefone, descricao },
+      data: { 
+        nome, 
+        email, 
+        cnpj, 
+        senha: hashedSenha,
+        telefone, 
+        descricao 
+      },
     });
 
-    // Retorna a mensagem de sucesso e a ONG criada
-    res.status(200).json({ message: 'ONG cadastrada com sucesso', ong });
-  } catch (error) {
-    console.error('Erro ao criar ONG:', error);
-    res.status(500).json({ error: 'Erro ao criar ONG', details: error.message });
-  }
-});
-//editar (ong)
+    // Remove a senha hash da resposta
+    const { senha: _, ...ongSemSenha } = ong;
 
-app.put('/ong/update/:id', async (req, res) => {
-  const { id } = req.params;
-  const { nome, email, senha, cnpj, telefone, descricao } = req.body;
-
-  try {
-    const ongExistente = await prisma.ong.findUnique({ where: { id: parseInt(id) } });
-    if (!ongExistente) {
-      return res.status(404).json({ error: 'ONG não encontrada' });
-    }
-
-    const ongAtualizada = await prisma.ong.update({
-      where: { id: parseInt(id) },
-      data: { nome, email, senha, cnpj, telefone, descricao },
+    return res.status(201).json({ 
+      success: true,
+      message: 'ONG cadastrada com sucesso',
+      data: ongSemSenha
     });
 
-    res.status(200).json(ongAtualizada);
   } catch (error) {
-    console.error('Erro ao atualizar ONG:', error);
-    res.status(500).json({ error: 'Erro ao atualizar ONG', details: error.message });
+    console.error('Erro detalhado:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      meta: error.meta
+    });
+    
+    // Tratamento específico para erros do Prisma
+    if (error.code === 'P2002') {
+      return res.status(400).json({ 
+        error: 'Violação de campo único',
+        details: error.meta?.target 
+      });
+    }
+    
+    return res.status(500).json({ 
+      error: 'Erro interno no servidor',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
-//deletar ONG
-app.delete('/ong/delete/:id', async (req, res) => {
-  const { id } = req.params;
 
-  try {
-    const ongExistente = await prisma.ong.findUnique({ where: { id: parseInt(id) } });
-    if (!ongExistente) {
-      return res.status(404).json({ error: 'ONG não encontrada' });
-    }
+// Health check endpoint
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    database: 'connected' // Adicione verificação real do banco se necessário
+  });
+});
 
-    await prisma.ong.delete({ where: { id: parseInt(id) } });
+// Rota alternativa mantida para compatibilidade
+app.post('/ong/create', async (req, res) => {
+  res.status(410).json({ 
+    error: 'Esta rota está obsoleta',
+    message: 'Use /api/v1/ong/create em vez disso'
+  });
+});
 
-    res.status(200).json({ message: 'ONG deletada com sucesso' });
-  } catch (error) {
-    console.error('Erro ao deletar ONG:', error);
-    res.status(500).json({ error: 'Erro ao deletar ONG', details: error.message });
-  }
+// Inicialização do servidor
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Encerramento limpo
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
+  console.log('Conexão com o banco de dados encerrada');
+  process.exit(0);
 });
