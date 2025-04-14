@@ -1,14 +1,19 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY || ''; 
-require('dotenv').config(); 
-const express = require('express'); 
+const SECRET_KEY = process.env.SECRET_KEY || '';
+require('dotenv').config();
+const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client'); 
+const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // URL exata do frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 const port = 3100;
 
 // rotas
@@ -56,7 +61,7 @@ app.post('/usuario/create', async (req, res) => {
   }
 
   try {
-  
+
     const cpfExistente = await prisma.usuario.findUnique({ where: { cpf } });
     if (cpfExistente) {
       return res.status(400).json({ error: 'CPF já cadastrado' });
@@ -66,8 +71,8 @@ app.post('/usuario/create', async (req, res) => {
     if (emailExistente) {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
-    
-    
+
+
     // Criptografar a senha
     const senhaCriptografada = await bcrypt.hash(senha, 10);
 
@@ -199,8 +204,8 @@ const validateOngData = ({ nome, email, cnpj }) => {
 app.post('/ong/create', async (req, res) => {
   const { nome, email, senha, cnpj, telefone, descricao } = req.body;
   if (!validarSenhaForte(senha)) {
-    return res.status(400).json({ 
-      error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais' 
+    return res.status(400).json({
+      error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais'
     });
   }
   const validation = validateOngData(req.body);
@@ -223,7 +228,7 @@ app.post('/ong/create', async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
-  
+
     const ong = await prisma.ong.create({
       data: { nome, email, cnpj, senha, telefone, descricao },
     });
@@ -291,13 +296,13 @@ app.post('/campanha/create', async (req, res) => {
   }
 
   try {
-    
+
     const ongExistente = await prisma.ong.findUnique({ where: { id: idOng } });
     if (!ongExistente) {
       return res.status(400).json({ error: 'ONG não encontrada' });
     }
 
- 
+
     const campanha = await prisma.campanha.create({
       data: { nome, descricao, meta, idOng },
     });
@@ -325,7 +330,7 @@ app.post('/doacao/create', async (req, res) => {
       return res.status(400).json({ error: 'Usuário não encontrado' });
     }
 
-  
+
     const campanhaExistente = await prisma.campanha.findUnique({ where: { id: idCampanha } });
     if (!campanhaExistente) {
       return res.status(400).json({ error: 'Campanha não encontrada' });
@@ -351,4 +356,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = app; 
+module.exports = app;
