@@ -1,7 +1,9 @@
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const SECRET_KEY = process.env.SECRET_KEY || '';
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);  // Usa a chave secreta da variável de ambiente
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
@@ -26,6 +28,10 @@ const cadastroONGRouter=require('./cadastroOng');
 app.use(cadastroONGRouter);
 
 app.use(express.json());
+
+const pagamentoRoutes = require('./routes/pagamento');
+app.use('/doacao', pagamentoRoutes); // URL será /doacao/create-payment-intent
+app.listen(4242, () => console.log('Servidor backend rodando na porta 4242'));
 
 
 app.get('/', (req, res) => {
@@ -355,5 +361,6 @@ if (require.main === module) {
     console.log(`Servidor rodando na porta ${port}`);
   });
 }
+
 
 module.exports = app;
