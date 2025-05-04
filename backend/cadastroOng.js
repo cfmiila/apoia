@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 
+const prisma = new PrismaClient(); // Instância do Prisma
 const router = express.Router();
 
 // Validações
@@ -31,9 +32,8 @@ const validateOngData = ({ nome, email, cnpj }) => {
   return { isValid: true };
 };
 
-// - versão consistente com o frontend
-router.post('/api/v1/ong/create', async (req, res) => {
-  console.log('Corpo da requisição:', req.body); // Log detalhado
+router.post('/create', async (req, res) => {
+  console.log('Corpo da requisição:', req.body);
 
   try {
     const { nome, email, senha, cnpj, telefone, descricao } = req.body;
@@ -86,12 +86,7 @@ router.post('/api/v1/ong/create', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro detalhado:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      meta: error.meta
-    });
+    console.error('Erro detalhado:', error);
 
     // Tratamento específico para erros do Prisma
     if (error.code === 'P2002') {
@@ -107,35 +102,5 @@ router.post('/api/v1/ong/create', async (req, res) => {
     });
   }
 });
-
-// // Health check endpoint
-// app.get('/api/v1/health', (req, res) => {
-//   res.status(200).json({
-//     status: 'healthy',
-//     timestamp: new Date().toISOString(),
-//     database: 'connected' // Adicione verificação real do banco se necessário
-//   });
-// });
-
-// // Rota alternativa mantida para compatibilidade
-// app.post('/ong/create', async (req, res) => {
-//   res.status(410).json({
-//     error: 'Esta rota está obsoleta',
-//     message: 'Use /api/v1/ong/create em vez disso'
-//   });
-// });
-
-// // Inicialização do servidor
-// app.listen(port, () => {
-//   console.log(`Servidor rodando na porta ${port}`);
-//   console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-// });
-
-// // Encerramento limpo
-// process.on('SIGTERM', async () => {
-//   await prisma.$disconnect();
-//   console.log('Conexão com o banco de dados encerrada');
-//   process.exit(0);
-// });
 
 module.exports = router;
