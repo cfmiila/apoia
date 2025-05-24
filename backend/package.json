@@ -7,7 +7,8 @@
     "test": "jest",
     "pretest": "cross-env NODE_ENV=test npm run migrate:reset",
     "migrate:reset": "npx prisma migrate reset --force && npm run migrate",
-    "migrate": "npx prisma migrate deploy"
+    "migrate": "npx prisma migrate deploy",
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "",
