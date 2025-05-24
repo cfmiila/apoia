@@ -7,6 +7,8 @@ import HowItWorks from "./components/HowItWorks";
 import PartnersSection from "./components/PartnersSection";
 import SignupCTA from "./components/SignupCTA";
 import TestimonialSection from "./components/TestimonialSection";
+import FormDoacao from './components/FormDoacao';
+
 
 export default function Home() {
   return (
@@ -18,6 +20,7 @@ export default function Home() {
       <TestimonialSection />
       <PartnersSection />
       <SignupCTA />
+      <FormDoacao />
       <Footer />
     </main>
   );
