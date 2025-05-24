@@ -1,0 +1,7 @@
+DATABASE_URL="mysql://usuario:senha@localhost:3306/nome_do_banco"
+SECRET_KEY=digite_uma_chave_secreta
+
+//para o banco de dados rodar é é necessário ter o mysql rodando na porta 3306
+// e para rodar o banco rode os seguintes comandos:
+// npx prisma generate
+// npx prisma migrate dev --name init
