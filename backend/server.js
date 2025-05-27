@@ -101,35 +101,37 @@ app.post("/login", async (req, res) => {
   const { email, senha } = req.body;
 
   try {
-    const usuario = await prisma.usuario.findUnique({ where: { email } });
-    if (!usuario) {
+    let entidade = await prisma.usuario.findUnique({ where: { email } });
+    let tipoEntidade = "parceiro";
+
+    if (!entidade) {
+      entidade = await prisma.ong.findUnique({ where: { email } });
+      tipoEntidade = "ONG";
+    }
+
+    if (!entidade) {
       return res.status(400).json({ error: "Email ou senha incorretos" });
     }
 
-    // Verificar a senha
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    const senhaValida = await bcrypt.compare(senha, entidade.senha);
     if (!senhaValida) {
       return res.status(400).json({ error: "Email ou senha incorretos" });
     }
 
-    // Gerar token JWT
-    const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, SECRET_KEY, {
+    const token = jwt.sign({ id: entidade.id, tipo: tipoEntidade }, SECRET_KEY, {
       expiresIn: "1h",
     });
 
-    res
-      .status(200)
-      .json({
-        token,
-        user: { id: usuario.id, nome: usuario.nome, tipo: usuario.tipo },
-      });
+    res.status(200).json({
+      token,
+      user: { id: entidade.id, nome: entidade.nome, tipo: tipoEntidade },
+    });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
-    res
-      .status(500)
-      .json({ error: "Erro ao fazer login", details: error.message });
+    res.status(500).json({ error: "Erro ao fazer login", details: error.message });
   }
 });
+
 
 //read
 

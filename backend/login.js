@@ -12,16 +12,17 @@ router.post("/login", async (req, res) => {
   const { email, senha } = req.body;
 
   try {
-    // Tenta encontrar como doador primeiro
-    let usuario = await prisma.usuario.findUnique({ where: { email } });
+    // Tenta encontrar como usuário (doador)
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
 
     if (usuario) {
       const senhaValida = await bcrypt.compare(senha, usuario.senha);
-      if (!senhaValida)
+      if (!senhaValida) {
         return res.status(400).json({ error: "Email ou senha incorretos" });
+      }
 
       const token = jwt.sign(
-        { id: usuario.id, tipo: usuario.tipo, nome: usuario.nome },
+        { id: usuario.id, tipo: "doador", nome: usuario.nome },
         SECRET_KEY,
         { expiresIn: "1h" }
       );
@@ -32,12 +33,12 @@ router.post("/login", async (req, res) => {
           id: usuario.id,
           nome: usuario.nome,
           email: usuario.email,
-          tipo: usuario.tipo,
+          tipo: "doador",
         },
       });
     }
 
-    // Se não achou como doador, tenta como ONG
+    // Se não for usuário, tenta como ONG
     const ong = await prisma.ong.findUnique({ where: { email } });
 
     if (!ong) {
@@ -45,17 +46,16 @@ router.post("/login", async (req, res) => {
     }
 
     const senhaValida = await bcrypt.compare(senha, ong.senha);
-    if (!senhaValida)
+    if (!senhaValida) {
       return res.status(400).json({ error: "Email ou senha incorretos" });
+    }
 
     const token = jwt.sign(
       { id: ong.id, tipo: "ONG", nome: ong.nome },
       SECRET_KEY,
       { expiresIn: "1h" }
     );
-    if (!usuario && !ong) {
-  return res.status(400).json({ error: "Usuário não encontrado nas tabelas" });
-}
+
     return res.status(200).json({
       token,
       user: {
@@ -70,5 +70,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Erro no login", details: error.message });
   }
 });
+
+
 
 module.exports = router;
