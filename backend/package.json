@@ -7,7 +7,8 @@
     "test": "jest",
     "pretest": "cross-env NODE_ENV=test npm run migrate:reset",
     "migrate:reset": "npx prisma migrate reset --force && npm run migrate",
-    "migrate": "npx prisma migrate deploy"
+    "migrate": "npx prisma migrate deploy",
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -15,11 +16,10 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mysql": "^2.18.1",
-    "stripe": "^18.0.0"
+    "mysql": "^2.18.1"
   },
   "devDependencies": {
     "@prisma/client": "^6.5.0",

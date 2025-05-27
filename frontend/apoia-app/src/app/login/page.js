@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -27,7 +27,10 @@ export default function Login() {
     e.preventDefault();
 
     if (!formData.email || !formData.senha) {
-      setMensagem({ text: "Por favor, preencha todos os campos", type: "error" });
+      setMensagem({
+        text: "Por favor, preencha todos os campos",
+        type: "error",
+      });
       return;
     }
 
@@ -49,14 +52,20 @@ export default function Login() {
         throw new Error(data.error || "Erro ao fazer login");
       }
 
-      // Armazenar o token JWT (localStorage, cookies, etc)
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user)); // você pode armazenar nome e tipo
 
       setMensagem({ text: "Login realizado com sucesso!", type: "success" });
+      const tipoUsuario = data.user.tipo;
+      console.log("Dados recebidos:", data);
 
-      // Redirecionar para a página inicial após o login
-      router.push("/dashboard"); // exemplo de redirecionamento
-
+      if (tipoUsuario === "ONG") {
+        router.push("/dashboard-ong");
+      } else if (tipoUsuario === "DOADOR") {
+        router.push("/dashboard-doador");
+      } else {
+        router.push("/dashboard"); // default
+      }
     } catch (error) {
       setMensagem({
         text: error.message.includes("Failed to fetch")
@@ -90,7 +99,9 @@ export default function Login() {
 
         {mensagem.text && (
           <div
-            className={`mt-3 text-sm ${mensagem.type === "error" ? "text-red-500" : "text-green-500"}`}
+            className={`mt-3 text-sm ${
+              mensagem.type === "error" ? "text-red-500" : "text-green-500"
+            }`}
           >
             {mensagem.text}
           </div>
@@ -125,14 +136,21 @@ export default function Login() {
             required
           />
 
-          <Button type="submit" disabled={isLoading} className="mt-4 bg-blue-700 rounded-3xl text-white hover:bg-blue-400 cursor-pointer delay-100">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="mt-4 bg-blue-700 rounded-3xl text-white hover:bg-blue-400 cursor-pointer delay-100"
+          >
             {isLoading ? "Carregando..." : "Entrar"}
           </Button>
 
           <div className="mt-4 text-center">
             <p>
               Não tem uma conta?{" "}
-              <Link href="/cadastro-doador" className="text-blue-600 hover:underline">
+              <Link
+                href="/cadastro-doador"
+                className="text-blue-600 hover:underline"
+              >
                 Cadastre-se
               </Link>
             </p>
