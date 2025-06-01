@@ -1,4 +1,5 @@
 "use client";
+import ApoiaChatbot from '../components/ApoiaChatbot';
 import AboutUs from "./components/AboutUs";
 import FeaturedCauses from "./components/FeaturedCauses";
 import Footer from "./components/Footer";
@@ -22,6 +23,7 @@ export default function Home() {
       <SignupCTA />
       <FormDoacao />
       <Footer />
+      <ApoiaChatbot/>
     </main>
   );
 }
