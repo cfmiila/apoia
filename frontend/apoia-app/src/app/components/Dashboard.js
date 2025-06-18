@@ -1,7 +1,5 @@
-// src/components/Dashboard.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-// Componente DashboardCard (agora interno ao Dashboard.js)
 function DashboardCard({ title, content }) {
   return (
     <div className="bg-white h-40 p-4 rounded-xl shadow flex flex-col">
@@ -17,8 +15,36 @@ function DashboardCard({ title, content }) {
   );
 }
 
-// Componente principal Dashboard
 export default function Dashboard() {
+  const [data, setData] = useState({
+    totalOngs: 'Carregando...',
+    totalUsuarios: 'Carregando...',
+    graficoDoacoes: <div className="h-24 flex items-center justify-center">Carregando gráfico...</div>,
+  });
+
+  useEffect(() => {
+    fetch('http://localhost:3100/api/dashboard/counts')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.counts) {
+          setData({
+            totalOngs: json.counts.ongs,
+            totalUsuarios: json.counts.usuarios,
+            graficoDoacoes: <div className="h-24 flex items-center justify-center">Gráfico aqui</div>,
+          });
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(() => {
+        setData({
+          totalOngs: 'Erro ao carregar',
+          totalUsuarios: 'Erro ao carregar',
+          graficoDoacoes: <div className="text-red-500">Erro no gráfico</div>,
+        });
+      });
+  }, []);
+
   return (
     <div className="p-6">
       {/* Cabeçalho */}
@@ -31,15 +57,15 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <DashboardCard 
           title="Total de ONGs cadastradas" 
-          content="120" 
+          content={data.totalOngs} 
         />
         <DashboardCard 
           title="Total de usuários registrados" 
-          content="350" 
+          content={data.totalUsuarios} 
         />
         <DashboardCard 
           title="Gráfico de doações" 
-          content={<div className="h-24 flex items-center justify-center">Gráfico aqui</div>} 
+          content={data.graficoDoacoes} 
         />
       </div>
     </div>
