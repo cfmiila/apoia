@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from 'next/link';
+import { Eye, EyeOff } from "lucide-react";  // ⬅️ Adicionado para o ícone do olhinho
 
 const validarSenhaForte = (senha) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
@@ -13,9 +14,9 @@ const validarSenhaForte = (senha) => {
 };
 
 const validarCPF = (cpf) => {
-    const regex = /^[0-9]{11}$/;
-    return regex.test(cpf);
-  };
+  const regex = /^[0-9]{11}$/;
+  return regex.test(cpf);
+};
 
 export default function CadastroDoador() {
   const [formData, setFormData] = useState({
@@ -28,6 +29,7 @@ export default function CadastroDoador() {
 
   const [mensagem, setMensagem] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);  // ⬅️ Estado para visualizar senha
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,17 +147,26 @@ export default function CadastroDoador() {
           <p className="text-sm text-gray-500 -mt-2">Digite um email válido</p>
 
           <Label htmlFor="senha">Senha*</Label>
-          <Input
-            id="senha"
-            name="senha"
-            type="password"
-            value={formData.senha}
-            onChange={handleChange}
-            placeholder="Crie uma senha forte"
-            className="rounded-2xl"
-            required
-            minLength={8}
-          />
+          <div className="relative">
+            <Input
+              id="senha"
+              name="senha"
+              type={showPassword ? "text" : "password"}  // ⬅️ Alternância de tipo
+              value={formData.senha}
+              onChange={handleChange}
+              placeholder="Crie uma senha forte"
+              className="rounded-2xl pr-10"
+              required
+              minLength={8}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           <p className="text-sm text-gray-500 -mt-2">
             Use 8+ caracteres com maiúsculas, minúsculas, números e símbolos
           </p>

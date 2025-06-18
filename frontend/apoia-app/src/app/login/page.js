@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";  // ⬅️ Ícones do olhinho
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export default function Login() {
 
   const [mensagem, setMensagem] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // ⬅️ Estado para mostrar/ocultar senha
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -53,18 +55,18 @@ export default function Login() {
       }
 
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user)); // você pode armazenar nome e tipo
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       setMensagem({ text: "Login realizado com sucesso!", type: "success" });
+
       const tipoUsuario = data.user.tipo;
-      console.log("Dados recebidos:", data);
 
       if (tipoUsuario === "ONG") {
         router.push("/dashboard-ong");
       } else if (tipoUsuario === "DOADOR") {
-        router.push("/dashboard-doador");
+        router.push("/");
       } else {
-        router.push("/dashboard"); // default
+        router.push("/");
       }
     } catch (error) {
       setMensagem({
@@ -84,7 +86,7 @@ export default function Login() {
       <div className="w-1/2 h-screen bg-gray-200 relative">
         <div className="absolute inset-0">
           <Image
-            src="/login.png" // Imagem de fundo para o login
+            src="/login.png"
             alt="Login"
             className="object-cover w-full h-full"
             fill
@@ -125,16 +127,25 @@ export default function Login() {
           />
 
           <Label htmlFor="senha">Senha*</Label>
-          <Input
-            id="senha"
-            name="senha"
-            type="password"
-            value={formData.senha}
-            onChange={handleChange}
-            placeholder="Digite sua senha"
-            className="rounded-2xl"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="senha"
+              name="senha"
+              type={showPassword ? "text" : "password"}
+              value={formData.senha}
+              onChange={handleChange}
+              placeholder="Digite sua senha"
+              className="rounded-2xl pr-10"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
           <Button
             type="submit"

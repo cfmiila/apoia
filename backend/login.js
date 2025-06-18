@@ -22,7 +22,7 @@ router.post("/login", async (req, res) => {
       }
 
       const token = jwt.sign(
-        { id: usuario.id, tipo: "doador", nome: usuario.nome },
+        { id: usuario.id, tipo: "DOADOR", nome: usuario.nome },
         SECRET_KEY,
         { expiresIn: "1h" }
       );
@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
           id: usuario.id,
           nome: usuario.nome,
           email: usuario.email,
-          tipo: "doador",
+          tipo: "DOADOR",
         },
       });
     }
