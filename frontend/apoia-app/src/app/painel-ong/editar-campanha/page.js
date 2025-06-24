@@ -116,7 +116,7 @@ export default function EditarCampanha() {
         />
 
         <label htmlFor="dataFim" style={styles.label}>
-          Data de Término:
+          Data de Térmo:
         </label>
         <input
           id="dataFim"
