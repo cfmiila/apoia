@@ -16,7 +16,6 @@ export default function PainelOng() {
     setLoading(true);
     setError('');
     try {
-      // TODO: Ajustar a URL da API para o endpoint real do backend
       const res = await fetch('/api/campanhas'); 
       if (!res.ok) throw new Error('Erro ao carregar campanhas');
       const data = await res.json();
@@ -33,30 +32,24 @@ export default function PainelOng() {
     carregarCampanhas();
   }, []);
 
-  // Navega para criação de campanha
   function handleCriarCampanha() {
     router.push('/painel-ong/criar-campanha');
   }
 
-  // Navega para edição da campanha com o ID fornecido
   function handleEditarCampanha(campanhaId) {
     router.push(`/painel-ong/editar-campanha/${campanhaId}`);
   }
 
-  // Excluir campanha via API
   async function handleExcluirCampanha(campanhaId) {
-    // TODO: Implementar confirmação antes da exclusão (ex: modal)
     if (!confirm(`Tem certeza que deseja excluir a campanha ${campanhaId}?`)) return;
 
     try {
-      // TODO: Ajustar URL da API para exclusão real no backend
       const res = await fetch(`/api/campanhas/${campanhaId}`, {
         method: 'DELETE',
       });
 
       if (!res.ok) throw new Error('Erro ao excluir campanha');
 
-      // Atualiza lista após exclusão
       setCampanhas(prev => prev.filter(c => c.id !== campanhaId));
       alert('Campanha excluída com sucesso!');
     } catch (err) {

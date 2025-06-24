@@ -223,7 +223,7 @@ export default function CriarCampanha() {
                   <span style={styles.spinner}></span>
                   Enviando...
                 </>
-              ) : 'Criar Campal'}
+              ) : 'Criar Campanha'}
             </button>
           </div>
         </form>
