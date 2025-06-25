@@ -46,6 +46,7 @@ model Campanha {
   ong          Ong        @relation(fields: [idOng], references: [id])
   idOng        Int
   doacoes      Doacao[]
+  imageUrl     String?
 }
 
 model Doacao {

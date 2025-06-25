@@ -121,9 +121,13 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Email ou senha incorretos" });
     }
 
-    const token = jwt.sign({ id: entidade.id, tipo: tipoEntidade }, SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: entidade.id, tipo: tipoEntidade },
+      SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     res.status(200).json({
       token,
@@ -131,10 +135,11 @@ app.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
-    res.status(500).json({ error: "Erro ao fazer login", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Erro ao fazer login", details: error.message });
   }
 });
-
 
 //read
 
@@ -410,19 +415,16 @@ app.post("/doacao/create", async (req, res) => {
 
 //falta eu colocar o da transação
 
-
 //aqui é do painel da ong
 
 app.use("/api", dashboardRoutes);
-
-
+const campanhaRoutes = require("./routes/campanha.routes");
+app.use("/api/campanhas", campanhaRoutes);
 
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
   });
 }
-
-
 
 module.exports = app;

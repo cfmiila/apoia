@@ -54,6 +54,10 @@ export default function Login() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user)); // você pode armazenar nome e tipo
+      // Armazena o ID da ONG se o usuário for uma ONG
+      if (data.user.tipo === "ONG" && data.user.id) {
+        localStorage.setItem("idOng", data.user.id);
+      }
 
       setMensagem({ text: "Login realizado com sucesso!", type: "success" });
       const tipoUsuario = data.user.tipo;
@@ -61,7 +65,7 @@ export default function Login() {
 
       if (tipoUsuario === "ONG") {
         router.push("/dashboard-ong");
-      } else if (tipoUsuario === "DOADOR") {
+      } else if (tipoUsuario === "parceiro") {
         router.push("/dashboard-doador");
       } else {
         router.push("/dashboard"); // default
