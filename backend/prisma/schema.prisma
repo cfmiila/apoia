@@ -1,5 +1,4 @@
 
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -9,29 +8,64 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  // output = "./diagrama.svg" 
+  // theme = "dark"
+}
+
+model Endereco {
+  id          Int      @id @default(autoincrement())
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+  
+  ong         Ong?
+  usuario     Usuario?
+}
+
+model CertificadoImpacto {
+  id                  Int      @id @default(autoincrement())
+  codigoVerificacao   String   @unique @default(uuid())
+  dataEmissao         DateTime @default(now())
+  descricaoImpacto    String
+  urlCertificadoPdf   String? 
+  doacao              Doacao   @relation(fields: [idDoacao], references: [id])
+  idDoacao            Int      @unique
+}
+
 model Usuario {
   id          Int        @id @default(autoincrement())
   cpf         String     @unique
   nome        String
   email       String     @unique
   senha       String
-  tipo        Tipo       @default(parceiro)
+  role        Role       @default(DOADOR)
   dataCriacao DateTime   @default(now())
   doacoes     Doacao[]
-  
+  endereco    Endereco?  @relation(fields: [idEndereco], references: [id])
+  idEndereco  Int?       @unique
+// Se este usuário for do tipo ONG, ele estará ligado a um perfil de ONG
+  perfilOng   Ong?       @relation(fields: [ongId], references: [id])
+  ongId       Int?       @unique
 }
 
 model Ong {
   id            Int        @id @default(autoincrement())
   nome          String
   cnpj          String     @unique
-  email         String     @unique
-  senha         String
   telefone      String?
   descricao     String?
   status        Status     @default(pendente)
   dataCadastro  DateTime   @default(now())
   campanhas     Campanha[]
+  endereco      Endereco?  @relation(fields: [idEndereco], references: [id])
+  idEndereco    Int?       @unique
+  gerente       Usuario?
 }
 
 model Campanha {
@@ -58,22 +92,28 @@ model Doacao {
   campanha     Campanha   @relation(fields: [idCampanha], references: [id])
   idCampanha   Int
   transacao    Transacao?
+  
+  certificado  CertificadoImpacto?
 }
+
 
 model Transacao {
-  id             Int        @id @default(autoincrement())
-  metodoPagamento MetodoPagamento
-  codigoTransacao String?   @unique
-  status         Status     @default(pendente)
-  dataPagamento  DateTime?
-  doacao         Doacao     @relation(fields: [idDoacao], references: [id])
-  idDoacao       Int @unique
+  id                      Int             @id @default(autoincrement())
+  stripePaymentIntentId   String          @unique 
+  // O status vem direto do Stripe (ex: 'succeeded', 'processing'). 
+  status                  String          
+  
+  metodoPagamento         MetodoPagamento
+  dataPagamento           DateTime?
+  
+  doacao                  Doacao          @relation(fields: [idDoacao], references: [id])
+  idDoacao                Int             @unique
 }
 
-enum Tipo {
-  parceiro
-  ong
-  admin
+enum Role {
+  DOADOR
+  ONG
+  ADMIN
 }
 
 enum Status {
@@ -85,5 +125,6 @@ enum Status {
 }
 
 enum MetodoPagamento {
-  pix
+  // Simplificado para indicar que a transação é gerenciada pelo Stripe.
+  STRIPE
 }

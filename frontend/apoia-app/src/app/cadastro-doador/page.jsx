@@ -15,39 +15,106 @@ const validarSenhaForte = (senha) => {
 const validarCPF = (cpf) => {
     const regex = /^[0-9]{11}$/;
     return regex.test(cpf);
-  };
+};
 
 export default function CadastroDoador() {
+  // --- MUDANÇA: Adicionando o objeto aninhado 'endereco' ---
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
     senha: "",
     telefone: "",
     cpf: "",
+    endereco: {
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+    },
   });
 
-  const [mensagem, setMensagem] = useState({ text: "", type: "" });
-  const [isLoading, setIsLoading] = useState(false);
+    const [mensagem, setMensagem] = useState({ text: "", type: "" });
+    const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+    const [isLoadingCep, setIsLoadingCep] = useState(false);
 
-    if (name === "cpf" || name === "telefone") {
-      const onlyNums = value.replace(/\D/g, "").slice(0, 11);
-      setFormData((prev) => ({ ...prev, [name]: onlyNums }));
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      const isEnderecoField = name.startsWith("endereco.");
+
+
+    if (name === "cpf" || name === "telefone" || name === "endereco.cep") {
+        const onlyNums = value.replace(/\D/g, "");
+        if (isEnderecoField) {
+            const field = name.split(".")[1];
+            setFormData((prev) => ({
+              ...prev,
+              endereco: { ...prev.endereco, [field]: onlyNums },
+            }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: onlyNums.slice(0, 11) }));
+        }
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+        if (isEnderecoField) {
+          const field = name.split(".")[1];
+          setFormData((prev) => ({
+            ...prev,
+            endereco: { ...prev.endereco, [field]: value },
+          }));
+        } else {
+          setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     }
   };
+
+  // Função para buscar CEP na API ViaCEP ---
+  const handleCepBlur = async (e) => {
+    const cep = e.target.value.replace(/\D/g, "");
+
+    if (cep.length !== 8) {
+      return;
+    }
+
+    setIsLoadingCep(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        setMensagem({ text: "CEP não encontrado.", type: "error" });
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        endereco: {
+          ...prev.endereco,
+          logradouro: data.logradouro,
+          bairro: data.bairro,
+          cidade: data.localidade,
+          estado: data.uf,
+        },
+      }));
+      setMensagem({ text: "", type: "" }); 
+    } catch (error) {
+      setMensagem({ text: "Erro ao buscar CEP.", type: "error" });
+    } finally {
+      setIsLoadingCep(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validações básicas
     if (!formData.nome || formData.nome.length < 3) {
       setMensagem({ text: "Nome deve ter pelo menos 3 caracteres", type: "error" });
       return;
     }
-
     if (!validarSenhaForte(formData.senha)) {
       setMensagem({
         text: "Senha deve ter 8+ caracteres com maiúsculas, minúsculas, números e símbolos",
@@ -55,13 +122,19 @@ export default function CadastroDoador() {
       });
       return;
     }
-
     if (!validarCPF(formData.cpf)) {
       setMensagem({ text: "CPF inválido", type: "error" });
       return;
     }
+    // --- NOVO: Validação de endereço ---
+    if (!formData.endereco.cep || !formData.endereco.numero) {
+      setMensagem({ text: "CEP e Número são obrigatórios.", type: "error" });
+      return;
+    }
+
 
     setIsLoading(true);
+    setMensagem({ text: "", type: "" });
 
     try {
       const response = await fetch("http://localhost:3100/usuario/create", {
@@ -70,7 +143,7 @@ export default function CadastroDoador() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ ...formData }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -80,7 +153,12 @@ export default function CadastroDoador() {
       }
 
       setMensagem({ text: "Doador cadastrado com sucesso!", type: "success" });
-      setFormData({ nome: "", email: "", senha: "", telefone: "", cpf: "" });
+     
+      setFormData({
+        nome: "", email: "", senha: "", telefone: "", cpf: "",
+        endereco: { cep: "", logradouro: "", numero: "", complemento: "", bairro: "", cidade: "", estado: "" }
+      });
+
     } catch (error) {
       setMensagem({
         text: error.message.includes("Failed to fetch")
@@ -95,8 +173,7 @@ export default function CadastroDoador() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
-      {/* Lado da Imagem */}
-      <div className="w-1/2 h-screen bg-gray-200 relative">
+      <div className="hidden md:block w-1/2 h-screen bg-gray-200 relative">
         <div className="absolute inset-0">
           <Image
             src="/doador-image.png"
@@ -107,8 +184,8 @@ export default function CadastroDoador() {
         </div>
       </div>
 
-      {/* Formulário */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center p-6 md:p-12 bg-white">
+    
+      <div className="w-full md:w-1/2 flex flex-col justify-center p-6 md:p-12 bg-white overflow-y-auto">
         <h1 className="text-3xl md:text-4xl font-bold">Seja um doador</h1>
         <p className="mt-2 text-gray-600">Faça a diferença!</p>
 
@@ -117,90 +194,78 @@ export default function CadastroDoador() {
           onSubmit={handleSubmit}
           noValidate
         >
+          {/* Campos de Dados Pessoais */}
           <Label htmlFor="nome">Nome completo*</Label>
-          <Input
-            id="nome"
-            name="nome"
-            type="text"
-            value={formData.nome}
-            onChange={handleChange}
-            placeholder="Nome completo"
-            className="rounded-2xl"
-            required
-            minLength={3}
-          />
-          <p className="text-sm text-gray-500 -mt-2">Mínimo 3 caracteres</p>
+          <Input id="nome" name="nome" type="text" value={formData.nome} onChange={handleChange} placeholder="Nome completo" className="rounded-2xl" required/>
 
           <Label htmlFor="email">Email*</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="exemplo@dominio.com"
-            className="rounded-2xl"
-            required
-          />
-          <p className="text-sm text-gray-500 -mt-2">Digite um email válido</p>
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="exemplo@dominio.com" className="rounded-2xl" required/>
 
           <Label htmlFor="senha">Senha*</Label>
-          <Input
-            id="senha"
-            name="senha"
-            type="password"
-            value={formData.senha}
-            onChange={handleChange}
-            placeholder="Crie uma senha forte"
-            className="rounded-2xl"
-            required
-            minLength={8}
-          />
-          <p className="text-sm text-gray-500 -mt-2">
-            Use 8+ caracteres com maiúsculas, minúsculas, números e símbolos
-          </p>
+          <Input id="senha" name="senha" type="password" value={formData.senha} onChange={handleChange} placeholder="Crie uma senha forte" className="rounded-2xl" required/>
 
           <Label htmlFor="telefone">Telefone</Label>
-          <Input
-            id="telefone"
-            name="telefone"
-            type="tel"
-            value={formData.telefone}
-            onChange={handleChange}
-            placeholder="(00) 00000-0000"
-            className="rounded-2xl"
-            pattern="[0-9]{10,11}"
-          />
-          <p className="text-sm text-gray-500 -mt-2">Apenas números, com DDD</p>
+          <Input id="telefone" name="telefone" type="tel" value={formData.telefone} onChange={handleChange} placeholder="Apenas números, com DDD" className="rounded-2xl"/>
 
           <Label htmlFor="cpf">CPF*</Label>
+          <Input id="cpf" name="cpf" type="text" value={formData.cpf} onChange={handleChange} placeholder="00000000000" className="rounded-2xl" required maxLength={11}/>
+          
+          {/* --- NOVOS CAMPOS DE ENDEREÇO --- */}
+          <h2 className="text-xl font-semibold pt-4 border-t mt-4">Endereço</h2>
+
+          <Label htmlFor="cep">CEP*</Label>
           <Input
-            id="cpf"
-            name="cpf"
+            id="cep"
+            name="endereco.cep"
             type="text"
-            value={formData.cpf}
+            value={formData.endereco.cep}
             onChange={handleChange}
-            placeholder="00000000000"
+            onBlur={handleCepBlur} // Aciona a busca ao sair do campo
+            placeholder="00000000"
             className="rounded-2xl"
             required
-            maxLength={11}
+            maxLength={8}
           />
-          <p className="text-sm text-gray-500 -mt-2">Digite um CPF válido</p>
+          {isLoadingCep && <p className="text-sm text-blue-500">Buscando CEP...</p>}
+
+          <Label htmlFor="logradouro">Logradouro*</Label>
+          <Input id="logradouro" name="endereco.logradouro" type="text" value={formData.endereco.logradouro} onChange={handleChange} placeholder="Rua, Avenida..." className="rounded-2xl" required readOnly={isLoadingCep} />
+
+          <div className="flex space-x-4">
+            <div className="w-1/2">
+              <Label htmlFor="numero">Número*</Label>
+              <Input id="numero" name="endereco.numero" type="text" value={formData.endereco.numero} onChange={handleChange} className="rounded-2xl" required />
+            </div>
+            <div className="w-1/2">
+              <Label htmlFor="complemento">Complemento</Label>
+              <Input id="complemento" name="endereco.complemento" type="text" value={formData.endereco.complemento} onChange={handleChange} placeholder="Apto, Bloco..." className="rounded-2xl" />
+            </div>
+          </div>
+          
+          <Label htmlFor="bairro">Bairro*</Label>
+          <Input id="bairro" name="endereco.bairro" type="text" value={formData.endereco.bairro} onChange={handleChange} className="rounded-2xl" required readOnly={isLoadingCep} />
+
+          <div className="flex space-x-4">
+            <div className="w-2/3">
+              <Label htmlFor="cidade">Cidade*</Label>
+              <Input id="cidade" name="endereco.cidade" type="text" value={formData.endereco.cidade} onChange={handleChange} className="rounded-2xl" required readOnly={isLoadingCep} />
+            </div>
+            <div className="w-1/3">
+              <Label htmlFor="estado">Estado*</Label>
+              <Input id="estado" name="endereco.estado" type="text" value={formData.endereco.estado} onChange={handleChange} className="rounded-2xl" required readOnly={isLoadingCep} />
+            </div>
+          </div>
 
           <Button
             type="submit"
             className="mt-4 bg-blue-700 rounded-3xl text-white hover:bg-blue-400 cursor-pointer delay-100"
-            disabled={isLoading}
+            disabled={isLoading || isLoadingCep}
           >
-            {isLoading ? "Carregando..." : "Cadastrar"}
+            {isLoading ? "Cadastrando..." : "Cadastrar"}
           </Button>
 
           {mensagem.text && (
-            <p
-              className={`mt-4 text-sm ${
-                mensagem.type === "success" ? "text-green-500" : "text-red-500"
-              }`}
-            >
+            <p className={`mt-4 text-sm text-center ${mensagem.type === "success" ? "text-green-500" : "text-red-500"}`}>
               {mensagem.text}
             </p>
           )}
