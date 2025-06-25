@@ -73,12 +73,12 @@ export default function Hero() {
               Apoie causas que transformam vidas! Cadastre-se como doador ou ONG
               e ajude de forma rápida, segura e transparente.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/pesquisa"
               className="mt-8 inline-block px-8 py-4 bg-blue-600 text-white font-semibold text-xl rounded-md shadow-lg hover:bg-blue-700 transition"
             >
               Encontre uma Causa para Apoiar
-            </a>
+            </Link>
           </div>
         </section>
       )}
@@ -101,7 +101,8 @@ export default function Hero() {
             </Link>
             <Link href="/cadastro-ong">
               <button className="flex flex-col items-center p-6 w-50 h-50 text-black rounded-lg shadow-lg hover:bg-blue-600 transition cursor-pointer hover:text-white">
-                <Image src="/ong-icon.svg" alt="ONG" width={120} height={120} />
+                <Image
+                  src="/ong-icon.svg" alt="ONG" width={120} height={120} />
                 <span className="mt-4 text-lg">Somos uma ONG</span>
               </button>
             </Link>

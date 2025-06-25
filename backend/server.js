@@ -4,6 +4,9 @@ const bcrypt = require("bcrypt");
 const express = require("express");
 const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
+
+const dashboardRoutes = require("./routes/adm/dashboardRoutes"); //WES
+
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const prisma = new PrismaClient();
 const app = express();
@@ -407,10 +410,19 @@ app.post("/doacao/create", async (req, res) => {
 
 //falta eu colocar o da transação
 
+
+//aqui é do painel da ong
+
+app.use("/api", dashboardRoutes);
+
+
+
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
   });
 }
+
+
 
 module.exports = app;

@@ -285,12 +285,12 @@ export default function CadastroONG() {
       <div className="hidden md:block md:w-1/2 h-screen bg-gray-200 relative">
         <div className="absolute inset-0">
           <Image 
-            src="/ong-image.jpg" 
+            src="/ong-image.png" 
             alt="ONG" 
             fill 
-            className="object-cover"
+            className="object-covergit"
             priority
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 768px) 50vw, 30vw"
           />
         </div>
       </div>
