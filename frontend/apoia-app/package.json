@@ -20,12 +20,14 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
+    "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^12.6.2",
     "lucide-react": "^0.484.0",
     "next": "^15.2.4",
+    "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-chatbot-kit": "^2.2.2",
     "react-dom": "^19.0.0",
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.8",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.2.2",
     "tailwindcss": "^4"
