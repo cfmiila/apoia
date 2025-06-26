@@ -7,16 +7,37 @@ const router = express.Router();
 // GET /api/campanhas
 router.get("/", async (req, res) => {
   const { ongId } = req.query;
-  
+
   try {
     const campanhas = await prisma.campanha.findMany({
-      where: ongId ? { idOng: parseInt(ongId) } : undefined
+      where: ongId ? { idOng: parseInt(ongId) } : undefined,
+      include: {
+        _count: {
+          select: { doacoes: true },
+        },
+        doacoes: {
+          select: {
+            valor: true,
+          },
+        },
+      },
     });
-    res.json(campanhas);
+
+    // Calcula o valor arrecadado para cada campanha
+    const campanhasComValor = campanhas.map((campanha) => ({
+      ...campanha,
+      valorArrecadado: campanha.doacoes.reduce(
+        (sum, doacao) => sum + doacao.valor,
+        0
+      ),
+      totalDoacoes: campanha._count.doacoes,
+    }));
+
+    res.json(campanhasComValor);
   } catch (err) {
     res.status(500).json({
       error: "Erro ao buscar campanhas",
-      details: err.message
+      details: err.message,
     });
   }
 });

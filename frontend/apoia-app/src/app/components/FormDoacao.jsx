@@ -1,29 +1,34 @@
 "use client";
 
-import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import React, { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   useStripe,
   useElements,
-  CardElement
-} from '@stripe/react-stripe-js';
+  CardElement,
+} from "@stripe/react-stripe-js";
 
-const stripePromise = loadStripe('pk_test_51RG9pX3moN6CE1AoVc7qIb6N0wfBmyHnhtawnbXbz8eZivwNbHlwJI5nqVJI4SdyIWY9c2nsI3ZiFFWi8AKnlOJM00X78jQTLU'); // troque pela sua
+const stripePromise = loadStripe(
+  "pk_test_51RG9pX3moN6CE1AoVc7qIb6N0wfBmyHnhtawnbXbz8eZivwNbHlwJI5nqVJI4SdyIWY9c2nsI3ZiFFWi8AKnlOJM00X78jQTLU"
+); // troque pela sua
 
 const CheckoutForm = () => {
-  const [valor, setValor] = useState('');
+  const [valor, setValor] = useState("");
   const stripe = useStripe();
   const elements = useElements();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch('http://localhost:4242/doacao/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ valor: parseFloat(valor) }),
-    });
+    const response = await fetch(
+      "http://localhost:4242/doacao/create-payment-intent",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ valor: parseFloat(valor) }),
+      }
+    );
 
     const data = await response.json();
 
@@ -36,14 +41,17 @@ const CheckoutForm = () => {
     if (result.error) {
       alert(`Erro no pagamento: ${result.error.message}`);
     } else {
-      if (result.paymentIntent.status === 'succeeded') {
-        alert('Pagamento realizado com sucesso!');
+      if (result.paymentIntent.status === "succeeded") {
+        alert("Pagamento realizado com sucesso!");
       }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-6 shadow-md rounded">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-md mx-auto bg-white p-6 shadow-md rounded"
+    >
       <label className="block mb-4">
         <span className="text-gray-700">Valor da Doação (R$):</span>
         <input
@@ -60,7 +68,7 @@ const CheckoutForm = () => {
       <button
         type="submit"
         disabled={!stripe}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
       >
         Doar
       </button>

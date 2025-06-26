@@ -420,6 +420,10 @@ app.post("/doacao/create", async (req, res) => {
 app.use("/api", dashboardRoutes);
 const campanhaRoutes = require("./routes/campanha.routes");
 app.use("/api/campanhas", campanhaRoutes);
+const ongsRouter = require("./routes/ongs.routes");
+app.use("/api/ongs", ongsRouter);
+const doacoesRouter = require("./routes/doacoes.routes");
+app.use("/api/doacoes", doacoesRouter);
 
 if (require.main === module) {
   app.listen(port, () => {
