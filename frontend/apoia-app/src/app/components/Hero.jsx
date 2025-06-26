@@ -45,9 +45,12 @@ export default function Hero() {
             <a href="#" className="hover:text-blue-300 transition">
               Depoimentos
             </a>
-            <button className="px-6 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition cursor-pointer">
+            <Link
+              href="/login"
+              className="px-6 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition cursor-pointer"
+            >
               Login
-            </button>
+            </Link>
             <button
               onClick={() => setShowRegistration(true)}
               className="px-6 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition cursor-pointer"
@@ -101,8 +104,7 @@ export default function Hero() {
             </Link>
             <Link href="/cadastro-ong">
               <button className="flex flex-col items-center p-6 w-50 h-50 text-black rounded-lg shadow-lg hover:bg-blue-600 transition cursor-pointer hover:text-white">
-                <Image
-                  src="/ong-icon.svg" alt="ONG" width={120} height={120} />
+                <Image src="/ong-icon.svg" alt="ONG" width={120} height={120} />
                 <span className="mt-4 text-lg">Somos uma ONG</span>
               </button>
             </Link>
