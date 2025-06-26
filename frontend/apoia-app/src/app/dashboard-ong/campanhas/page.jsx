@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { CampanhaCard } from "../components/Campanha-card";
-import { CampanhaDialogForm } from "../components/Campanha-dialog-form";
+import { CampanhaCard } from "../../components/Campanha-card";
+import { CampanhaDialogForm } from "../../components/Campanha-dialog-form";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";

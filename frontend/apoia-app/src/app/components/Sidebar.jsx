@@ -38,26 +38,26 @@ export function Sidebar() {
             <MenuItem
               icon={<FaChartPie />}
               text="Painel"
-              href="/painel"
-              active={isActive("/painel")}
+              href="/dashboard-ong"
+              active={isActive("/dashboard-ong")}
             />
             <MenuItem
               icon={<FaClipboardList />}
-              text="Quadro"
-              href="/quadro"
-              active={isActive("/quadro")}
+              text="Gerenciamento de Campanhas"
+              href="/dashboard-ong/campanhas"
+              active={isActive("/dashboard-ong/campanhas")}
             />
             <MenuItem
               icon={<FaChartPie />}
               text="Análises"
-              href="/analises"
-              active={isActive("/analises")}
+              href="/dashboard-ong/analises"
+              active={isActive("/dashboard-ong/analises")}
             />
             <MenuItem
               icon={<FaCog />}
               text="Configurações"
-              href="/configuracoes"
-              active={isActive("/configuracoes")}
+              href="/dashboard-ong/configuracoes"
+              active={isActive("/dashboard-ong/configuracoes")}
             />
           </>
         );
