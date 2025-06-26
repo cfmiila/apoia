@@ -18,7 +18,6 @@ const validarCPF = (cpf) => {
 };
 
 export default function CadastroDoador() {
-  // --- MUDANÇA: Adicionando o objeto aninhado 'endereco' ---
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -126,7 +125,7 @@ export default function CadastroDoador() {
       setMensagem({ text: "CPF inválido", type: "error" });
       return;
     }
-    // --- NOVO: Validação de endereço ---
+    // --- Validação de endereço ---
     if (!formData.endereco.cep || !formData.endereco.numero) {
       setMensagem({ text: "CEP e Número são obrigatórios.", type: "error" });
       return;
@@ -210,8 +209,7 @@ export default function CadastroDoador() {
           <Label htmlFor="cpf">CPF*</Label>
           <Input id="cpf" name="cpf" type="text" value={formData.cpf} onChange={handleChange} placeholder="00000000000" className="rounded-2xl" required maxLength={11}/>
           
-          {/* --- NOVOS CAMPOS DE ENDEREÇO --- */}
-          <h2 className="text-xl font-semibold pt-4 border-t mt-4">Endereço</h2>
+          {/* --- NOVOS CAMPOS DE ENDEREÇO --- */}   <h2 className="text-xl font-semibold pt-4 border-t mt-4">Endereço</h2>
 
           <Label htmlFor="cep">CEP*</Label>
           <Input
@@ -220,7 +218,7 @@ export default function CadastroDoador() {
             type="text"
             value={formData.endereco.cep}
             onChange={handleChange}
-            onBlur={handleCepBlur} // Aciona a busca ao sair do campo
+            onBlur={handleCepBlur} 
             placeholder="00000000"
             className="rounded-2xl"
             required
@@ -229,7 +227,7 @@ export default function CadastroDoador() {
           {isLoadingCep && <p className="text-sm text-blue-500">Buscando CEP...</p>}
 
           <Label htmlFor="logradouro">Logradouro*</Label>
-          <Input id="logradouro" name="endereco.logradouro" type="text" value={formData.endereco.logradouro} onChange={handleChange} placeholder="Rua, Avenida..." className="rounded-2xl" required readOnly={isLoadingCep} />
+          <Input id="logradouro" name="endereco.logradouro" type="text" value={formData.endereco.rua} onChange={handleChange} placeholder="Rua, Avenida..." className="rounded-2xl" required readOnly={isLoadingCep} />
 
           <div className="flex space-x-4">
             <div className="w-1/2">

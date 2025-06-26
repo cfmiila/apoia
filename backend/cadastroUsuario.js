@@ -37,7 +37,6 @@ router.post('/create', async (req, res) => {
         return res.status(400).json({ error: 'Endereço incompleto. CEP, logradouro, número, bairro, cidade e estado são obrigatórios.' });
     }
 
-    // 2. Verifica se o usuário já existe (Email ou CPF)
     const [emailExistente, cpfExistente] = await Promise.all([
       prisma.usuario.findUnique({ where: { email } }),
       prisma.usuario.findUnique({ where: { cpf } }),
@@ -94,8 +93,6 @@ router.post('/create', async (req, res) => {
 
   } catch (error) {
     console.error('Erro detalhado no cadastro de doador:', error);
-
-    // Tratamento de erros do Prisma, como violação de campo único (embora já verificado acima)
     if (error.code === 'P2002') {
       const field = error.meta?.target?.join(', ');
       return res.status(409).json({ error: `O campo '${field}' já está em uso.` });
