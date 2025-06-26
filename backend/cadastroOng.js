@@ -1,141 +1,130 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const SECRET_KEY = process.env.SECRET_KEY || '';
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const bcrypt = require('bcrypt');
 const { PrismaClient } = require('@prisma/client');
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
-// Validações
+// --- Funções de Validação ---
 const validarSenhaForte = (senha) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   return regex.test(senha);
 };
 
-const validateOngData = ({ nome, email, cnpj }) => {
-  if (!nome || nome.length < 3) {
-    return { isValid: false, error: 'Nome deve ter pelo menos 3 caracteres' };
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailRegex.test(email)) {
-    return { isValid: false, error: 'Email inválido' };
-  }
-
-  if (!cnpj || cnpj.length !== 14 || !/^\d+$/.test(cnpj)) {
-    return { isValid: false, error: 'CNPJ inválido (deve ter 14 dígitos numéricos)' };
-  }
-
-  return { isValid: true };
+const validarCNPJ = (cnpj) => {
+  if (!cnpj) return false;
+  const justNums = cnpj.replace(/\D/g, '');
+  // CNPJ deve ter 14 dígitos numéricos
+  return /^\d{14}$/.test(justNums);
 };
 
-// - versão consistente com o frontend
-router.post('/api/v1/ong/create', async (req, res) => {
-  console.log('Corpo da requisição:', req.body); // Log detalhado
+// --- Rota de Criação de ONG ---
+router.post('/create', async (req, res) => {
+  console.log('Recebido para cadastro de ONG:', req.body);
 
   try {
-    const { nome, email, senha, cnpj, telefone, descricao } = req.body;
+    const { nome, email, senha, cnpj, telefone, descricao, endereco } = req.body;
 
-    // Validações
+    // 1. Validação robusta dos dados de entrada
+    if (!nome || !email || !senha || !cnpj || !endereco) {
+      return res.status(400).json({ error: 'Campos obrigatórios (nome, email, senha, cnpj, endereço) não foram preenchidos.' });
+    }
     if (!validarSenhaForte(senha)) {
-      return res.status(400).json({
-        error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais'
-      });
+      return res.status(400).json({ error: 'Senha deve ter no mínimo 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais.' });
+    }
+    if (!validarCNPJ(cnpj)) {
+      return res.status(400).json({ error: 'CNPJ inválido. Forneça 14 dígitos numéricos.' });
+    }
+    if (!endereco.cep || !endereco.logradouro || !endereco.numero || !endereco.bairro || !endereco.cidade || !endereco.estado) {
+        return res.status(400).json({ error: 'Endereço da ONG incompleto. Todos os campos são obrigatórios.' });
     }
 
-    const validation = validateOngData({ nome, email, cnpj });
-    if (!validation.isValid) {
-      return res.status(400).json({ error: validation.error });
-    }
-
-    // Verifica se ONG já existe
-    const [cnpjExistente, emailExistente] = await Promise.all([
+    // 2. Verifica se o email (na tabela Usuario) ou CNPJ (na tabela Ong) já existem
+    const [emailExistente, cnpjExistente] = await Promise.all([
+      prisma.usuario.findUnique({ where: { email } }),
       prisma.ong.findUnique({ where: { cnpj } }),
-      prisma.ong.findUnique({ where: { email } }),
     ]);
 
-    if (cnpjExistente || emailExistente) {
-      return res.status(400).json({
-        error: cnpjExistente ? 'CNPJ já cadastrado' : 'Email já cadastrado',
-        field: cnpjExistente ? 'cnpj' : 'email'
-      });
+    if (emailExistente) {
+      return res.status(409).json({ error: 'Este email já está em uso por outro usuário.' });
+    }
+    if (cnpjExistente) {
+      return res.status(409).json({ error: 'Este CNPJ já está cadastrado.' });
     }
 
-    // Cria a ONG com senha hasheada
+    // 3. Hashear a senha
     const hashedSenha = await bcrypt.hash(senha, 10);
-    const ong = await prisma.ong.create({
-      data: {
-        nome,
-        email,
-        cnpj,
-        senha: hashedSenha,
-        telefone,
-        descricao
-      },
+
+    // 4. Criar Endereço, Usuário e ONG em uma única transação para garantir consistência
+    const novaOngCompleta = await prisma.$transaction(async (tx) => {
+      // Passo A: Cria o endereço
+      const novoEndereco = await tx.endereco.create({
+        data: {
+          cep: endereco.cep,
+          logradouro: endereco.logradouro,
+          numero: endereco.numero,
+          complemento: endereco.complemento,
+          bairro: endereco.bairro,
+          cidade: endereco.cidade,
+          estado: endereco.estado,
+        },
+      });
+
+      // Passo B: Cria o usuário que gerenciará a ONG
+      const novoUsuarioGestor = await tx.usuario.create({
+        data: {
+          nome: nome, 
+          email,
+          cpf: cnpj, 
+          senha: hashedSenha,
+          role: 'ONG',
+          idEndereco: novoEndereco.id, 
+        },
+      });
+
+      
+      const novaOng = await tx.ong.create({
+        data: {
+          nome,
+          cnpj,
+          telefone: telefone || null,
+          descricao: descricao || null,
+          status: 'pendente',
+          idEndereco: novoEndereco.id, 
+          // Conecta a ONG ao usuário que a gerencia
+          gerente: {
+            connect: { id: novoUsuarioGestor.id },
+          },
+        },
+        include: {
+          gerente: true, 
+          endereco: true, 
+        }
+      });
+
+      return novaOng;
     });
 
-    // Remove a senha hash da resposta
-    const { senha: _, ...ongSemSenha } = ong;
+    delete novaOngCompleta.gerente.senha;
 
     return res.status(201).json({
       success: true,
-      message: 'ONG cadastrada com sucesso',
-      data: ongSemSenha
+      message: 'ONG cadastrada com sucesso! Aguardando verificação do administrador.',
+      data: novaOngCompleta,
     });
 
   } catch (error) {
-    console.error('Erro detalhado:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      meta: error.meta
-    });
-
-    // Tratamento específico para erros do Prisma
+    console.error('Erro detalhado no cadastro de ONG:', error);
     if (error.code === 'P2002') {
-      return res.status(400).json({
-        error: 'Violação de campo único',
-        details: error.meta?.target
-      });
+      const field = error.meta?.target?.join(', ');
+      return res.status(409).json({ error: `O campo '${field}' já está em uso.` });
     }
 
     return res.status(500).json({
-      error: 'Erro interno no servidor',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'Ocorreu um erro interno no servidor. Por favor, tente novamente.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });
-
-// // Health check endpoint
-// app.get('/api/v1/health', (req, res) => {
-//   res.status(200).json({
-//     status: 'healthy',
-//     timestamp: new Date().toISOString(),
-//     database: 'connected' // Adicione verificação real do banco se necessário
-//   });
-// });
-
-// // Rota alternativa mantida para compatibilidade
-// app.post('/ong/create', async (req, res) => {
-//   res.status(410).json({
-//     error: 'Esta rota está obsoleta',
-//     message: 'Use /api/v1/ong/create em vez disso'
-//   });
-// });
-
-// // Inicialização do servidor
-// app.listen(port, () => {
-//   console.log(`Servidor rodando na porta ${port}`);
-//   console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-// });
-
-// // Encerramento limpo
-// process.on('SIGTERM', async () => {
-//   await prisma.$disconnect();
-//   console.log('Conexão com o banco de dados encerrada');
-//   process.exit(0);
-// });
 
 module.exports = router;
