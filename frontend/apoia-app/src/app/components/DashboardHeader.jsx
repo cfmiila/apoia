@@ -52,10 +52,26 @@ export function DashboardHeader() {
       .toUpperCase();
   };
 
+  const getTitulo = () => {
+    const tipo = user?.tipo?.toLowerCase();
+    switch (tipo) {
+      case "ong":
+        return `Painel da ONG`;
+      case "parceiro":
+        return `Painel do Parceiro`;
+      case "doador":
+        return `Bem-vindo, ${user?.nome?.split(" ")[0] || "Doador"}!`;
+      case "admin":
+        return `Painel Administrativo`;
+      default:
+        return "Painel do Usuário";
+    }
+  };
+
   return (
     <>
       <header className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold">Dashboard</h2>
+        <h2 className="text-3xl font-semibold">{getTitulo()}</h2>
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -73,7 +89,10 @@ export function DashboardHeader() {
                 Tipo: {user?.tipo ?? "N/A"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-gray-300 hover:border-white px-4 py-2 rounded-md text-gray-700">
+              <DropdownMenuItem
+                onClick={() => setShowLogoutDialog(true)}
+                className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-gray-300 hover:border-white px-4 py-2 rounded-md text-gray-700"
+              >
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -88,10 +107,18 @@ export function DashboardHeader() {
             <DialogTitle>Deseja realmente sair?</DialogTitle>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowLogoutDialog(false)} className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white">
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+              className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
+            >
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={handleLogout} className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600">
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
+            >
               Confirmar
             </Button>
           </DialogFooter>
