@@ -65,7 +65,7 @@ export function EventoCard({
           </div>
         </div>
       ) : (
-        // Layout para ONG (com botões Editar/Excluir)
+        // Layout para ONG (com botões Editar/Excluir somente se NÃO for doador)
         <Card className="rounded-2xl bg-white hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">{evento.nome}</CardTitle>
@@ -92,23 +92,25 @@ export function EventoCard({
             <p className="text-xs text-gray-500">Endereço:</p>
             <p className="text-sm mb-3">{evento.endereco}</p>
 
-            {/* Botões somente para ONG */}
-            <div className="flex gap-2 mt-4 pt-3 border-t">
-              <Button
-                variant="outline"
-                className="transition-all duration-200 ease-in-out hover:bg-blue-200 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
-                onClick={() => onEdit(evento)}
-              >
-                Editar
-              </Button>
-              <Button
-                variant="destructive"
-                className="transition-all duration-200 ease-in-out hover:bg-red-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-red-500"
-                onClick={() => setShowDeleteDialog(true)}
-              >
-                Excluir
-              </Button>
-            </div>
+            {/* Botões só aparecem se NÃO for doador */}
+            {!isDoador && (
+              <div className="flex gap-2 mt-4 pt-3 border-t">
+                <Button
+                  variant="outline"
+                  className="transition-all duration-200 ease-in-out hover:bg-blue-200 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
+                  onClick={() => onEdit(evento)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="transition-all duration-200 ease-in-out hover:bg-red-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-red-500"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  Excluir
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
