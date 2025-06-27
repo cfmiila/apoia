@@ -424,6 +424,8 @@ const ongsRouter = require("./routes/ongs.routes");
 app.use("/api/ongs", ongsRouter);
 const doacoesRouter = require("./routes/doacoes.routes");
 app.use("/api/doacoes", doacoesRouter);
+const eventosRouter = require("./routes/eventos.routes");
+app.use("/api/eventos", eventosRouter);
 
 if (require.main === module) {
   app.listen(port, () => {

@@ -78,6 +78,12 @@ export function Sidebar() {
             />
             <MenuItem
               icon={<FaCog />}
+              text="Eventos"
+              href="/dashboard-doador/eventos"
+              active={isActive("/dashboard-doador/eventos")}
+            />
+            <MenuItem
+              icon={<FaCog />}
               text="Configurações"
               href="/dashboard-doador/configuracoes"
               active={isActive("/dashboard-doador/configuracoes")}
