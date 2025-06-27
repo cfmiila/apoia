@@ -37,6 +37,7 @@ CREATE TABLE `Usuario` (
     `dataCriacao` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `idEndereco` INTEGER NULL,
     `ongId` INTEGER NULL,
+    `imageUrl` VARCHAR(191) NULL,
 
     UNIQUE INDEX `Usuario_cpf_key`(`cpf`),
     UNIQUE INDEX `Usuario_email_key`(`email`),
@@ -57,6 +58,7 @@ CREATE TABLE `Ong` (
     `status` ENUM('pendente', 'aprovada', 'rejeitada', 'ativa', 'encerrada') NOT NULL DEFAULT 'pendente',
     `dataCadastro` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `idEndereco` INTEGER NULL,
+    `imageUrl` VARCHAR(191) NULL,
 
     UNIQUE INDEX `Ong_email_key`(`email`),
     UNIQUE INDEX `Ong_cnpj_key`(`cnpj`),

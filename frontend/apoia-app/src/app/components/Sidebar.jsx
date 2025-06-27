@@ -49,9 +49,9 @@ export function Sidebar() {
             />
             <MenuItem
               icon={<FaChartPie />}
-              text="Análises"
-              href="/dashboard-ong/analises"
-              active={isActive("/dashboard-ong/analises")}
+              text="Gerenciamento de Eventos"
+              href="/dashboard-ong/eventos"
+              active={isActive("/dashboard-ong/eventos")}
             />
             <MenuItem
               icon={<FaCog />}

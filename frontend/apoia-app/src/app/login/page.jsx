@@ -150,12 +150,23 @@ export default function Login() {
 
           <div className="mt-4 text-center">
             <p>
-              Não tem uma conta?{" "}
+              Não tem uma conta? Cadastre-se:
+              <br />
               <Link
                 href="/cadastro-doador"
                 className="text-blue-600 hover:underline"
               >
-                Cadastre-se
+                Sou um Doador
+              </Link>
+            </p>
+          </div>
+          <div className="mt-4 text-center">
+            <p>
+              <Link
+                href="/cadastro-ong"
+                className="text-blue-600 hover:underline"
+              >
+                Sou uma ONG
               </Link>
             </p>
           </div>
