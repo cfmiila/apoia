@@ -57,6 +57,8 @@ model Usuario {
 model Ong {
   id            Int        @id @default(autoincrement())
   nome          String
+  email         String     @unique
+  senha         String
   cnpj          String     @unique
   telefone      String?
   descricao     String?
