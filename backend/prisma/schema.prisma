@@ -1,151 +1,85 @@
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
 generator erd {
   provider = "prisma-erd-generator"
-  // output = "./diagrama.svg" 
-  // theme = "dark"
 }
 
-model Endereco {
-  id          Int     @id @default(autoincrement())
-  cep         String
-  logradouro  String
-  numero      String
-  complemento String?
-  bairro      String
-  cidade      String
-  estado      String
-
-  ong     Ong?
-  usuario Usuario?
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model CertificadoImpacto {
-  id                Int      @id @default(autoincrement())
-  codigoVerificacao String   @unique @default(uuid())
-  dataEmissao       DateTime @default(now())
-  descricaoImpacto  String
-  urlCertificadoPdf String?
-  doacao            Doacao   @relation(fields: [idDoacao], references: [id])
-  idDoacao          Int      @unique
-}
-
-model Usuario {
-  id                  Int             @id @default(autoincrement())
-  cpf                 String          @unique
-  nome                String
-  email               String          @unique
-  senha               String
-  role                Role            @default(DOADOR)
-  dataCriacao         DateTime        @default(now())
-  doacoes             Doacao[]
-  endereco            Endereco?       @relation(fields: [idEndereco], references: [id])
-  idEndereco          Int?            @unique
-  // Se este usuário for do tipo ONG, ele estará ligado a um perfil de ONG
-  perfilOng           Ong?            @relation(fields: [ongId], references: [id])
-  ongId               Int?            @unique
-  imageUrl            String?
-  eventosInteressados UsuarioEvento[]
-}
-
-model Ong {
-  id           Int        @id @default(autoincrement())
-  nome         String
-  email        String     @unique
-  senha        String
-  cnpj         String     @unique
-  telefone     String?
-  descricao    String?
-  status       Status     @default(pendente)
-  dataCadastro DateTime   @default(now())
-  campanhas    Campanha[]
-  endereco     Endereco?  @relation(fields: [idEndereco], references: [id])
-  idEndereco   Int?       @unique
-  gerente      Usuario?
-  imageUrl     String?
-  eventos      Evento[]
-}
-
-model Campanha {
-  id         Int       @id @default(autoincrement())
+model campanha {
+  id         Int             @id @default(autoincrement())
   nome       String
   descricao  String?
-  meta       Decimal   @db.Decimal(10, 2)
-  arrecadado Decimal   @default(0.00) @db.Decimal(10, 2)
-  status     Status    @default(ativa)
-  dataInicio DateTime  @default(now())
+  meta       Decimal         @db.Decimal(10, 2)
+  arrecadado Decimal         @default(0.00) @db.Decimal(10, 2)
+  status     campanha_status @default(ativa)
+  dataInicio DateTime        @default(now())
   dataFim    DateTime?
-  ong        Ong       @relation(fields: [idOng], references: [id])
   idOng      Int
-  doacoes    Doacao[]
-  imageUrl   String?
+  ong        ong             @relation(fields: [idOng], references: [id], map: "Campanha_idOng_fkey")
+  doacao     doacao[]
+
+  @@index([idOng], map: "Campanha_idOng_fkey")
 }
 
-model Doacao {
+model doacao {
   id         Int        @id @default(autoincrement())
   valor      Decimal    @db.Decimal(10, 2)
   dataDoacao DateTime   @default(now())
-  usuario    Usuario    @relation(fields: [idUsuario], references: [id])
   idUsuario  Int
-  campanha   Campanha   @relation(fields: [idCampanha], references: [id])
   idCampanha Int
-  transacao  Transacao?
+  campanha   campanha   @relation(fields: [idCampanha], references: [id], map: "Doacao_idCampanha_fkey")
+  usuario    usuario    @relation(fields: [idUsuario], references: [id], map: "Doacao_idUsuario_fkey")
+  transacao  transacao?
 
-  certificado CertificadoImpacto?
+  @@index([idCampanha], map: "Doacao_idCampanha_fkey")
+  @@index([idUsuario], map: "Doacao_idUsuario_fkey")
 }
 
-model Transacao {
-  id                    Int    @id @default(autoincrement())
-  stripePaymentIntentId String @unique
-  // O status vem direto do Stripe (ex: 'succeeded', 'processing'). 
-  status                String
-
-  metodoPagamento MetodoPagamento
-  dataPagamento   DateTime?
-
-  doacao   Doacao @relation(fields: [idDoacao], references: [id])
-  idDoacao Int    @unique
-}
-
-model Evento {
-  id           Int             @id @default(autoincrement())
+model ong {
+  id           Int        @id @default(autoincrement())
   nome         String
-  descricao    String
-  data         DateTime
-  local        String // nome do local (ex: "Praça Central")
-  endereco     String // pode ser um campo livre ou vinculado ao model Endereco
-  imagemUrl    String? // imagem de divulgação
-  ong          Ong             @relation(fields: [idOng], references: [id])
-  idOng        Int
-  interessados UsuarioEvento[] // relacionamento com doadores interessados
-  criadoEm     DateTime        @default(now())
+  cnpj         String     @unique(map: "Ong_cnpj_key")
+  email        String     @unique(map: "Ong_email_key")
+  senha        String
+  telefone     String?
+  descricao    String?
+  status       ong_status @default(pendente)
+  dataCadastro DateTime   @default(now())
+  campanha     campanha[]
 }
 
-model UsuarioEvento {
-  id        Int      @id @default(autoincrement())
-  usuario   Usuario  @relation(fields: [idUsuario], references: [id])
-  idUsuario Int
-  evento    Evento   @relation(fields: [idEvento], references: [id])
-  idEvento  Int
-  criadoEm  DateTime @default(now())
-
-  @@unique([idUsuario, idEvento]) // um usuário não pode se registrar duas vezes no mesmo evento
+model transacao {
+  id              Int                       @id @default(autoincrement())
+  metodoPagamento transacao_metodoPagamento
+  codigoTransacao String?                   @unique(map: "Transacao_codigoTransacao_key")
+  status          transacao_status          @default(pendente)
+  dataPagamento   DateTime?
+  idDoacao        Int                       @unique(map: "Transacao_idDoacao_key")
+  doacao          doacao                    @relation(fields: [idDoacao], references: [id], map: "Transacao_idDoacao_fkey")
 }
 
-enum Role {
-  DOADOR
-  ONG
-  ADMIN
+model usuario {
+  id          Int          @id @default(autoincrement())
+  cpf         String       @unique(map: "Usuario_cpf_key")
+  nome        String
+  email       String       @unique(map: "Usuario_email_key")
+  senha       String
+  tipo        usuario_tipo @default(parceiro)
+  dataCriacao DateTime     @default(now())
+  doacao      doacao[]
 }
 
-enum Status {
+enum transacao_metodoPagamento {
+  pix
+}
+
+enum transacao_status {
   pendente
   aprovada
   rejeitada
@@ -153,7 +87,24 @@ enum Status {
   encerrada
 }
 
-enum MetodoPagamento {
-  // Simplificado para indicar que a transação é gerenciada pelo Stripe.
-  STRIPE
+enum campanha_status {
+  pendente
+  aprovada
+  rejeitada
+  ativa
+  encerrada
+}
+
+enum usuario_tipo {
+  parceiro
+  ong
+  admin
+}
+
+enum ong_status {
+  pendente
+  aprovada
+  rejeitada
+  ativa
+  encerrada
 }
