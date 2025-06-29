@@ -17,6 +17,18 @@ router.get("/", async (req, res) => {
         status: true,
         dataCadastro: true,
         cnpj: true,
+        // Adicionando a relação 'endereco' para que os campos de endereço sejam incluídos
+        endereco: {
+          select: {
+            cep: true,
+            logradouro: true,
+            numero: true,
+            complemento: true,
+            bairro: true,
+            cidade: true,
+            estado: true,
+          },
+        },
       },
       orderBy: {
         dataCadastro: "desc", // Ordena por data de cadastro (mais recentes primeiro)
@@ -25,7 +37,7 @@ router.get("/", async (req, res) => {
 
     res.json(ongs);
   } catch (err) {
-    console.error("Erro detalhado:", err);
+    console.error("Erro detalhado ao buscar ONGs:", err);
     res.status(500).json({
       error: "Erro ao buscar ONGs",
       details:
@@ -52,6 +64,18 @@ router.get("/:id", async (req, res) => {
         status: true,
         dataCadastro: true,
         cnpj: true,
+        // Adicionando a relação 'endereco' para que os campos de endereço sejam incluídos
+        endereco: {
+          select: {
+            cep: true,
+            logradouro: true,
+            numero: true,
+            complemento: true,
+            bairro: true,
+            cidade: true,
+            estado: true,
+          },
+        },
       },
     });
 
@@ -61,7 +85,7 @@ router.get("/:id", async (req, res) => {
 
     res.json(ong);
   } catch (err) {
-    console.error("Erro detalhado:", err);
+    console.error("Erro detalhado ao buscar ONG:", err);
     res.status(500).json({
       error: "Erro ao buscar ONG",
       details:

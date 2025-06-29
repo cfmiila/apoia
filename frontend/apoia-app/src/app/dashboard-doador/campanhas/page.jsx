@@ -1,11 +1,11 @@
-// src/app/doador/page.jsx
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { OngCard } from "../../components/Ong-card";
 import { CampanhaCard } from "../../components/Campanha-card";
 import { Button } from "@/components/ui/button";
 import { DoacaoDialog } from "../../components/Doacao-dialog";
+import { Input } from "@/components/ui/input"; // Assumindo que você tem um componente Input do shadcn/ui
 
 export default function DoadorPage() {
   const [ongs, setOngs] = useState([]);
@@ -14,13 +14,20 @@ export default function DoadorPage() {
   const [showDoacaoDialog, setShowDoacaoDialog] = useState(false);
   const [selectedCampanha, setSelectedCampanha] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // Novo estado para o termo de pesquisa
+  const [addressFilter, setAddressFilter] = useState(""); // Novo estado para o filtro de endereço
 
+  // Efeito para carregar ONGs e Campanhas ao montar o componente
   useEffect(() => {
-    fetchOngs();
-    fetchCampanhas();
-    setLoading(false);
+    const fetchData = async () => {
+      await fetchOngs();
+      await fetchCampanhas();
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
+  // Função para buscar ONGs
   const fetchOngs = async () => {
     try {
       const res = await axios.get("http://localhost:3100/api/ongs");
@@ -30,6 +37,7 @@ export default function DoadorPage() {
     }
   };
 
+  // Função para buscar Campanhas
   const fetchCampanhas = async () => {
     try {
       const res = await axios.get("http://localhost:3100/api/campanhas");
@@ -39,10 +47,55 @@ export default function DoadorPage() {
     }
   };
 
+  // Lida com o clique no botão "Doar" de uma campanha
   const handleDoarClick = (campanha) => {
     setSelectedCampanha(campanha);
     setShowDoacaoDialog(true);
   };
+
+  // Lógica de filtragem otimizada com useMemo para evitar recálculos desnecessários
+  const filteredCampanhas = useMemo(() => {
+    // Começa com todas as campanhas
+    let currentCampanhas = campanhas;
+
+    // 1. Filtra por ONG selecionada (se houver)
+    if (selectedOng) {
+      currentCampanhas = currentCampanhas.filter(
+        (camp) => camp.idOng === selectedOng
+      );
+    }
+
+    // 2. Filtra por termo de pesquisa (nome ou descrição da campanha)
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      currentCampanhas = currentCampanhas.filter(
+        (camp) =>
+          camp.nome.toLowerCase().includes(lowerCaseSearchTerm) ||
+          (camp.descricao &&
+            camp.descricao.toLowerCase().includes(lowerCaseSearchTerm))
+      );
+    }
+
+    // 3. Filtra por endereço da ONG associada
+    if (addressFilter) {
+      const lowerCaseAddressFilter = addressFilter.toLowerCase();
+      currentCampanhas = currentCampanhas.filter((campanha) => {
+        const ong = ongs.find((o) => o.id === campanha.idOng);
+        if (!ong) return false; // Se a ONG não for encontrada, não inclui a campanha
+
+        // Concatena todos os campos de endereço da ONG para a pesquisa
+        const fullAddress = `${ong.logradouro || ""} ${ong.numero || ""} ${
+          ong.complemento || ""
+        } ${ong.bairro || ""} ${ong.cidade || ""} ${ong.estado || ""} ${
+          ong.cep || ""
+        }`.toLowerCase();
+
+        return fullAddress.includes(lowerCaseAddressFilter);
+      });
+    }
+
+    return currentCampanhas;
+  }, [campanhas, selectedOng, searchTerm, addressFilter, ongs]); // Dependências do useMemo
 
   if (loading)
     return <div className="flex justify-center p-8">Carregando...</div>;
@@ -50,7 +103,6 @@ export default function DoadorPage() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="flex-1 p-6">
-
         <div className="space-y-8">
           {/* Seção de ONGs */}
           <section>
@@ -72,12 +124,31 @@ export default function DoadorPage() {
           {/* Seção de Campanhas */}
           <section>
             <h2 className="text-xl font-bold mb-4">Campanhas em Destaque</h2>
+
+            {/* Inputs de Filtro e Pesquisa */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <Input
+                type="text"
+                placeholder="Pesquisar campanhas por nome ou descrição..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Input
+                type="text"
+                placeholder="Filtrar por endereço da ONG..."
+                value={addressFilter}
+                onChange={(e) => setAddressFilter(e.target.value)}
+                className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             {selectedOng ? (
-              <p className="mb-4">
+              <p className="mb-4 text-gray-700">
                 Mostrando campanhas da ONG selecionada.
                 <Button
                   variant="link"
-                  className="ml-2"
+                  className="ml-2 px-0 py-0 h-auto text-blue-600 hover:underline"
                   onClick={() => setSelectedOng(null)}
                 >
                   Mostrar todas
@@ -85,22 +156,27 @@ export default function DoadorPage() {
               </p>
             ) : null}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {campanhas
-                .filter((camp) => !selectedOng || camp.idOng === selectedOng)
-                .map((campanha) => {
+            {/* Exibe campanhas filtradas ou mensagem de "não encontrado" */}
+            {filteredCampanhas.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredCampanhas.map((campanha) => {
                   const ong = ongs.find((o) => o.id === campanha.idOng);
                   return (
                     <CampanhaCard
                       key={campanha.id}
                       campanha={campanha}
-                      ong={ong}
+                      ong={ong} // Passa a ONG para o CampanhaCard
                       onDoarClick={handleDoarClick}
                       isDoador={true}
                     />
                   );
                 })}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center p-8 text-gray-500 text-lg rounded-lg bg-white shadow-sm">
+                Nenhuma campanha encontrada com os filtros aplicados.
+              </div>
+            )}
           </section>
         </div>
 

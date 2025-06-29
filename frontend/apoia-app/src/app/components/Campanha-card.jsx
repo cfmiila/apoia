@@ -62,7 +62,7 @@ export function CampanhaCard({
             {ong && (
               <div className="flex items-center space-x-2 mb-2">
                 <img
-                  src={ong?.logo || "/default-ong.png"}
+                  src={ong?.logo}
                   alt={ong?.nome}
                   className="h-6 w-6 rounded-full"
                 />

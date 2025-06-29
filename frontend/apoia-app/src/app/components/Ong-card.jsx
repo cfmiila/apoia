@@ -11,7 +11,7 @@ export function OngCard({ ong, onClick, isSelected }) {
         <div className="flex-shrink-0">
           <img 
             className="h-12 w-12 rounded-full" 
-            src={ong.logo || "/default-ong.png"} 
+            src={ong.logo} 
             alt={ong.nome} 
           />
         </div>
