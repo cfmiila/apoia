@@ -61,7 +61,6 @@ export default function Login() {
 
       setMensagem({ text: "Login realizado com sucesso!", type: "success" });
       const tipoUsuario = data.user.tipo;
-      console.log("Dados recebidos:", data);
 
       if (tipoUsuario === "ONG") {
         router.push("/dashboard-ong");
