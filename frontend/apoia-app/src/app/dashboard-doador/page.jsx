@@ -1,4 +1,4 @@
-"use client"; // Marca como Client Component no Next.js
+"use client";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -38,6 +38,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import axios from "axios"; // Importe axios para requisições HTTP
 
 // Função utilitária para formatar moeda
 const formatCurrency = (value) => {
@@ -59,16 +60,16 @@ const COLORS = [
 ];
 
 export default function DoadorPainel() {
-  const [usuarioId, setUsuarioId] = useState(null); // Começa como null
+  const [usuarioId, setUsuarioId] = useState(null);
   const [resumo, setResumo] = useState(null);
   const [minhasDoacoes, setMinhasDoacoes] = useState([]);
   const [doacoesPorCampanha, setDoacoesPorCampanha] = useState([]);
   const [doacoesPorMes, setDoacoesPorMes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [generatingCert, setGeneratingCert] = useState(false); // Novo estado para loading do certificado
 
   useEffect(() => {
-    // Tenta obter o ID do usuário do localStorage quando o componente montar
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -88,63 +89,72 @@ export default function DoadorPainel() {
       setError("Nenhum usuário logado. Por favor, faça login.");
       setLoading(false);
     }
-  }, []); // O array vazio garante que este useEffect rode apenas uma vez ao montar
+  }, []);
 
   useEffect(() => {
     const fetchDoadorData = async () => {
       if (!usuarioId) {
-        // Não busca dados se o usuarioId ainda não foi definido
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      setError(null); // Limpa erros anteriores
+      setError(null);
 
       try {
-        // Fetch de dados para o resumo
-        const resumoRes = await fetch(
-          `http://localhost:3100/api/dashboard-doador/resumo/${usuarioId}`
-        );
-        if (!resumoRes.ok) throw new Error("Falha ao buscar resumo.");
-        const resumoData = await resumoRes.json();
-        setResumo(resumoData);
+        const [resumoRes, doacoesRes, doacoesCampanhaRes, doacoesMesRes] =
+          await Promise.all([
+            axios.get(
+              `http://localhost:3100/api/dashboard-doador/resumo/${usuarioId}`
+            ),
+            axios.get(
+              `http://localhost:3100/api/dashboard-doador/minhas-doacoes/${usuarioId}`
+            ),
+            axios.get(
+              `http://localhost:3100/api/dashboard-doador/doacoes-por-campanha/${usuarioId}`
+            ),
+            axios.get(
+              `http://localhost:3100/api/dashboard-doador/doacoes-por-mes/${usuarioId}`
+            ),
+          ]);
 
-        // Fetch de dados para minhas doações
-        const doacoesRes = await fetch(
-          `http://localhost:3100/api/dashboard-doador/minhas-doacoes/${usuarioId}`
-        );
-        if (!doacoesRes.ok) throw new Error("Falha ao buscar minhas doações.");
-        const doacoesData = await doacoesRes.json();
-        setMinhasDoacoes(doacoesData);
-
-        // Fetch de dados para doações por campanha
-        const doacoesCampanhaRes = await fetch(
-          `http://localhost:3100/api/dashboard-doador/doacoes-por-campanha/${usuarioId}`
-        );
-        if (!doacoesCampanhaRes.ok)
-          throw new Error("Falha ao buscar doações por campanha.");
-        const doacoesCampanhaData = await doacoesCampanhaRes.json();
-        setDoacoesPorCampanha(doacoesCampanhaData);
-
-        // Fetch de dados para doações por mês
-        const doacoesMesRes = await fetch(
-          `http://localhost:3100/api/dashboard-doador/doacoes-por-mes/${usuarioId}`
-        );
-        if (!doacoesMesRes.ok)
-          throw new Error("Falha ao buscar doações por mês.");
-        const doacoesMesData = await doacoesMesRes.json();
-        setDoacoesPorMes(doacoesMesData);
+        setResumo(resumoRes.data);
+        setMinhasDoacoes(doacoesRes.data);
+        setDoacoesPorCampanha(doacoesCampanhaRes.data);
+        setDoacoesPorMes(doacoesMesRes.data);
       } catch (err) {
         console.error("Erro ao carregar dados do doador:", err);
-        setError(err.message);
+        setError(err.message || "Erro ao carregar dados.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchDoadorData();
-  }, [usuarioId]); // Este useEffect será re-executado sempre que `usuarioId` mudar
+  }, [usuarioId]);
+
+  // Função para gerar o certificado
+  const handleGenerateCertificate = async (doacaoId) => {
+    setGeneratingCert(true);
+    try {
+      const response = await axios.post(
+        `http://localhost:3100/api/certificados/gerar/${doacaoId}`
+      );
+      if (response.data && response.data.url) {
+        // Abre o PDF em uma nova aba
+        window.open(`http://localhost:3100${response.data.url}`, "_blank");
+      } else {
+        alert("Erro: URL do certificado não recebida.");
+      }
+    } catch (err) {
+      console.error("Erro ao gerar certificado:", err);
+      alert(
+        `Erro ao gerar certificado: ${err.response?.data?.error || err.message}`
+      );
+    } finally {
+      setGeneratingCert(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -156,8 +166,6 @@ export default function DoadorPainel() {
     return <div className="p-8 text-center text-red-500">Erro: {error}</div>;
   }
 
-  // Se usuarioId for null (não encontrado no localStorage ou erro), pode-se redirecionar
-  // ou exibir uma mensagem específica. Aqui, já é tratado pelo `error` state.
   if (!usuarioId) {
     return (
       <div className="p-8 text-center text-red-500">
@@ -248,39 +256,32 @@ export default function DoadorPainel() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {minhasDoacoes.slice(0, 5).map(
-                  (
-                    doacao // Exibe as 5 últimas doações
-                  ) => (
-                    <TableRow key={doacao.id}>
-                      <TableCell className="font-medium">
-                        {doacao.campanha?.nome}
-                      </TableCell>
-                      <TableCell>{doacao.campanha?.ong?.nome}</TableCell>
-                      <TableCell>{formatCurrency(doacao.valor)}</TableCell>
-                      <TableCell>
-                        {new Date(doacao.dataDoacao).toLocaleDateString(
-                          "pt-BR"
-                        )}
-                      </TableCell>
-                      <TableCell>{doacao.status}</TableCell>
-                      <TableCell className="text-right">
-                        {doacao.status === "concluido" && (
-                          <Button variant="outline" size="sm" asChild>
-                            {/* MOCK: Link para a página de certificado. Você precisará criar esta página */}
-                            <a
-                              href={`/dashboard-doador/certificado/${doacao.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Gerar Certificado
-                            </a>
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )
-                )}
+                {minhasDoacoes.slice(0, 5).map((doacao) => (
+                  <TableRow key={doacao.id}>
+                    <TableCell className="font-medium">
+                      {doacao.campanha?.nome}
+                    </TableCell>
+                    <TableCell>{doacao.campanha?.ong?.nome}</TableCell>
+                    <TableCell>{formatCurrency(doacao.valor)}</TableCell>
+                    <TableCell>
+                      {new Date(doacao.dataDoacao).toLocaleDateString("pt-BR")}
+                    </TableCell>
+                    <TableCell>{doacao.status}</TableCell>
+                    <TableCell className="text-right">
+                      {doacao.status === "concluido" && (
+                        <Button
+                          className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleGenerateCertificate(doacao.id)}
+                          disabled={generatingCert} // Desabilita durante a geração
+                        >
+                          {generatingCert ? "Gerando..." : "Gerar Certificado"}
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
               {minhasDoacoes.length > 5 && (
                 <TableCaption>
@@ -312,13 +313,12 @@ export default function DoadorPainel() {
                   <Pie
                     data={doacoesPorCampanha}
                     dataKey="valorTotal"
-                    nameKey="nomeCampanha" // Esta chave deve corresponder ao nome da propriedade no objeto de dados
+                    nameKey="nomeCampanha"
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
                     fill="#8884d8"
                     labelLine={false}
-                    // AQUI é onde o nome é acessado para o label
                     label={({ payload, percent }) =>
                       `${payload.nomeCampanha} (${(percent * 100).toFixed(0)}%)`
                     }

@@ -22,7 +22,9 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
-    "stripe": "^18.2.1"
+    "puppeteer": "^23.11.1",
+    "stripe": "^18.2.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@prisma/client": "^6.10.1",

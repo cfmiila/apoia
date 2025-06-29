@@ -5,6 +5,8 @@ const express = require("express");
 const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
 const bodyParser = require("body-parser");
+const path = require("path");
+const fs = require("fs");
 
 const dashboardRoutes = require("./routes/adm/dashboardRoutes"); //WES
 
@@ -441,6 +443,16 @@ const dashboardOngRoutes = require("./routes/dashboardOng.routes");
 app.use("/api/dashboard", dashboardOngRoutes);
 const dashboardDoadorRoutes = require("./routes/dashboardDoador.routes");
 app.use("/api/dashboard-doador", dashboardDoadorRoutes);
+const certificadosRoutes = require("./routes/certificados.routes");
+// Isso permite que o frontend acesse os PDFs gerados em `/public/certificados/nome_do_arquivo.pdf`
+app.use("/public", express.static(path.join(__dirname, "public")));
+// Garante que a pasta de certificados existe ao iniciar o servidor
+const certificadosDir = path.join(__dirname, "public", "certificados");
+if (!fs.existsSync(certificadosDir)) {
+  fs.mkdirSync(certificadosDir, { recursive: true });
+  console.log(`Diretório de certificados criado: ${certificadosDir}`);
+}
+app.use("/api/certificados", certificadosRoutes);
 
 if (require.main === module) {
   app.listen(port, () => {
