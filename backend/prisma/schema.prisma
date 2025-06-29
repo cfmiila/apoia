@@ -124,6 +124,7 @@ model Evento {
   nome         String
   descricao    String
   data         DateTime
+  horario      String
   local        String // nome do local (ex: "Praça Central")
   endereco     String // pode ser um campo livre ou vinculado ao model Endereco
   imagemUrl    String? // imagem de divulgação

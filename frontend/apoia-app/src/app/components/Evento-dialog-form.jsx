@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ export function EventoDialogForm({
     nome: "",
     descricao: "",
     data: "",
+    horario: "", // ✅ Novo estado para o horário
     local: "",
     endereco: "",
     imagemUrl: "",
@@ -34,6 +34,7 @@ export function EventoDialogForm({
         nome: initialData.nome || "",
         descricao: initialData.descricao || "",
         data: initialData.data ? initialData.data.split("T")[0] : "",
+        horario: initialData.horario || "", // ✅ Carrega o horário existente
         local: initialData.local || "",
         endereco: initialData.endereco || "",
         imagemUrl: initialData.imagemUrl || "",
@@ -43,6 +44,7 @@ export function EventoDialogForm({
         nome: "",
         descricao: "",
         data: "",
+        horario: "", // ✅ Limpa o horário para novo evento
         local: "",
         endereco: "",
         imagemUrl: "",
@@ -59,7 +61,7 @@ export function EventoDialogForm({
     e.preventDefault();
     await onSave({
       ...form,
-      data: form.data ? new Date(form.data).toISOString() : null,
+      data: form.data ? new Date(form.data).toISOString() : null, // Mantenha a data como ISOString
       idOng,
     });
   };
@@ -94,6 +96,15 @@ export function EventoDialogForm({
             value={form.data}
             onChange={handleChange}
             required
+          />
+          {/* ✅ Novo input para o horário */}
+          <Input
+            name="horario"
+            type="time" // Define o tipo para input de hora
+            placeholder="Horário (HH:MM)"
+            value={form.horario}
+            onChange={handleChange}
+            required // Torna o horário obrigatório
           />
           <Input
             name="local"

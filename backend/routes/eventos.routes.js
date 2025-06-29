@@ -4,7 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const router = express.Router();
 
-// GET /api/eventos
+// GET /api/eventos (Nenhuma mudança necessária aqui, já que o Prisma retorna todos os campos)
 router.get("/", async (req, res) => {
   const { ongId } = req.query;
 
@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
       orderBy: { data: "asc" },
       include: {
         interessados: true,
-      }
+      },
     });
 
     res.json(eventos);
@@ -28,7 +28,8 @@ router.get("/", async (req, res) => {
 
 // POST /api/eventos
 router.post("/", async (req, res) => {
-  const { nome, descricao, data, local, endereco, imagemUrl, idOng } = req.body;
+  const { nome, descricao, data, horario, local, endereco, imagemUrl, idOng } =
+    req.body; // ✅ Adicionado 'horario'
 
   try {
     const novoEvento = await prisma.evento.create({
@@ -36,6 +37,7 @@ router.post("/", async (req, res) => {
         nome,
         descricao,
         data: data ? new Date(data) : null,
+        horario, // ✅ Salva o horário
         local,
         endereco,
         imagemUrl,
@@ -55,7 +57,8 @@ router.post("/", async (req, res) => {
 // PUT /api/eventos/:id
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { nome, descricao, data, local, endereco, imagemUrl } = req.body;
+  const { nome, descricao, data, horario, local, endereco, imagemUrl } =
+    req.body; // ✅ Adicionado 'horario'
 
   try {
     const eventoAtualizado = await prisma.evento.update({
@@ -64,6 +67,7 @@ router.put("/:id", async (req, res) => {
         nome,
         descricao,
         data: data ? new Date(data) : null,
+        horario, // ✅ Atualiza o horário
         local,
         endereco,
         imagemUrl,
@@ -117,11 +121,13 @@ router.post("/:id/interesse", async (req, res) => {
 
     res.status(201).json(interesse);
   } catch (err) {
-    if (err.code === 'P2002') {
+    if (err.code === "P2002") {
       // Erro Prisma unique constraint
       return res.status(409).json({ error: "Usuário já demonstrou interesse" });
     }
-    res.status(500).json({ error: "Erro ao registrar interesse", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Erro ao registrar interesse", details: err.message });
   }
 });
 

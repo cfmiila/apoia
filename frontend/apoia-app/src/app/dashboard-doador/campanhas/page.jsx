@@ -54,7 +54,7 @@ export default function DoadorPage() {
         <div className="space-y-8">
           {/* Seção de ONGs */}
           <section>
-            <h2 className="text-xl font-bold mb-4">ONGs Disponíveis</h2>
+            <h2 className="text-xl font-bold mb-4">ONGs disponíveis</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {ongs.map((ong) => (
                 <OngCard
