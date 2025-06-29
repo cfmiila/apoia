@@ -8,7 +8,9 @@
     "pretest": "cross-env NODE_ENV=test npm run migrate:reset",
     "migrate:reset": "npx prisma migrate reset --force && npm run migrate",
     "migrate": "npx prisma migrate deploy",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "prisma:generate": "npx prisma generate --schema=./prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate dev --schema=./prisma/schema.prisma"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +21,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "stripe": "^18.2.1"
   },
   "devDependencies": {
     "@prisma/client": "^6.10.1",

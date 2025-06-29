@@ -9,6 +9,7 @@ import {
   FaUsers,
   FaBullhorn,
   FaFileAlt,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 export function Sidebar() {
@@ -48,7 +49,7 @@ export function Sidebar() {
               active={isActive("/dashboard-ong/campanhas")}
             />
             <MenuItem
-              icon={<FaChartPie />}
+              icon={<FaCalendarAlt />}
               text="Gerenciamento de Eventos"
               href="/dashboard-ong/eventos"
               active={isActive("/dashboard-ong/eventos")}
@@ -75,6 +76,12 @@ export function Sidebar() {
               text="Campanhas"
               href="/dashboard-doador/campanhas"
               active={isActive("/dashboard-doador/campanhas")}
+            />
+            <MenuItem
+              icon={<FaCalendarAlt />}
+              text="Eventos"
+              href="/dashboard-doador/eventos"
+              active={isActive("/dashboard-doador/eventos")}
             />
             <MenuItem
               icon={<FaCog />}

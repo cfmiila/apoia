@@ -58,13 +58,13 @@ export function DashboardHeader() {
       case "ong":
         return `Painel da ONG`;
       case "parceiro":
-        return `Painel do Parceiro`;
+        return `Painel do parceiro`;
       case "doador":
         return `Bem-vindo, ${user?.nome?.split(" ")[0] || "Doador"}!`;
       case "admin":
-        return `Painel Administrativo`;
+        return `Painel administrativo`;
       default:
-        return "Painel do Usuário";
+        return "Painel do usuário";
     }
   };
 

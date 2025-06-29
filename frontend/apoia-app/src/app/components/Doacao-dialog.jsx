@@ -1,5 +1,8 @@
-// src/components/Doacao-dialog.jsx
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,11 +13,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export function DoacaoDialog({ open, onOpenChange, campanha, onSuccess }) {
   const [valor, setValor] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userData, setUserData] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      setUserData(user);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,27 +38,55 @@ export function DoacaoDialog({ open, onOpenChange, campanha, onSuccess }) {
     setError("");
 
     try {
-      const idDoador = localStorage.getItem("userId"); // Supondo que o ID do doador está no localStorage
-
-      if (!idDoador) {
-        throw new Error("Usuário não autenticado");
+      if (!userData) {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (!storedUser) {
+          sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+          router.push("/login");
+          return;
+        }
+        setUserData(storedUser);
       }
 
-      await axios.post("http://localhost:3100/api/doacoes", {
-        valor: parseFloat(valor),
-        idCampanha: campanha.id,
-        idDoador: parseInt(idDoador),
+      const token = localStorage.getItem("token");
+      if (!token) {
+        sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+        router.push("/login");
+        return;
+      }
+
+      // 1. Criar sessão de checkout no backend
+      const { data } = await axios.post(
+        "http://localhost:3100/api/pagamentos/create-payment-intent",
+        {
+          valor: parseFloat(valor),
+          idUsuario: userData.id,
+          idCampanha: campanha.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // 2. Redirecionar para o checkout do Stripe
+      const stripe = await stripePromise;
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId, // Agora usando sessionId ao invés de clientSecret
       });
 
-      onSuccess();
-      onOpenChange(false);
-      setValor("");
+      if (stripeError) {
+        throw stripeError;
+      }
+
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          "Erro ao processar doação. Tente novamente."
+        err.message ||
+        "Erro ao processar doação. Tente novamente."
       );
-      console.error(err);
+      console.error("Erro na doação:", err);
     } finally {
       setLoading(false);
     }
@@ -74,24 +118,49 @@ export function DoacaoDialog({ open, onOpenChange, campanha, onSuccess }) {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <div className="p-4 bg-red-50 rounded-md">
+                <p className="text-red-600">
+                  {error.includes("login") ? (
+                    <>
+                      {error}. Você será redirecionado para a página de login.
+                      <span className="block mt-2 text-sm text-red-500">
+                        Se o redirecionamento não funcionar, <a href="/login" className="underline">clique aqui</a>.
+                      </span>
+                    </>
+                  ) : (
+                    error
+                  )}
+                </p>
+              </div>
+            )}
 
             <div className="flex justify-end space-x-2">
               <Button
-                className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-black bg-white"
-                type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                type="button"
+                onClick={() => {
+                  setError("");
+                  onOpenChange(false);
+                }}
                 disabled={loading}
+                className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
               >
                 Cancelar
               </Button>
               <Button
-                className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
                 type="submit"
-                disabled={loading}
+                disabled={loading || !valor}
+                className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
               >
-                {loading ? "Processando..." : "Confirmar Doação"}
+                {loading ? (
+                  <>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  "Confirmar Doação"
+                )}
               </Button>
             </div>
           </div>

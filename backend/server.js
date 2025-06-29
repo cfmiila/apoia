@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const express = require("express");
 const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
+const bodyParser = require("body-parser");
 
 
 
@@ -46,6 +47,14 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello World!"); // aqui fiz só pela maldição, mas depois mudaremos
 });
+
+app.use(
+  bodyParser.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 function validarSenhaForte(senha) {
   const regexSenha =
@@ -436,6 +445,14 @@ const ongsRouter = require("./routes/ongs.routes");
 app.use("/api/ongs", ongsRouter);
 const doacoesRouter = require("./routes/doacoes.routes");
 app.use("/api/doacoes", doacoesRouter);
+const eventosRouter = require("./routes/eventos.routes");
+app.use("/api/eventos", eventosRouter);
+const pagamentosRouter = require("./routes/pagamento.routes");
+app.use("/api/pagamentos", pagamentosRouter);
+const dashboardOngRoutes = require("./routes/dashboardOng.routes");
+app.use("/api/dashboard", dashboardOngRoutes);
+const dashboardDoadorRoutes = require("./routes/dashboardDoador.routes");
+app.use("/api/dashboard-doador", dashboardDoadorRoutes);
 
 if (require.main === module) {
   app.listen(port, () => {
