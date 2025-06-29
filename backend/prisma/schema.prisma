@@ -92,10 +92,13 @@ model Doacao {
   id         Int        @id @default(autoincrement())
   valor      Decimal    @db.Decimal(10, 2)
   dataDoacao DateTime   @default(now())
+  status       String    @default("pendente")
   usuario    Usuario    @relation(fields: [idUsuario], references: [id])
   idUsuario  Int
-  campanha   Campanha   @relation(fields: [idCampanha], references: [id])
   idCampanha Int
+  idTransacao  Int?
+  campanha   Campanha   @relation(fields: [idCampanha], references: [id])
+  
   transacao  Transacao?
 
   certificado CertificadoImpacto?
@@ -103,7 +106,7 @@ model Doacao {
 
 model Transacao {
   id                    Int    @id @default(autoincrement())
-  stripePaymentIntentId String @unique
+  stripePaymentIntentId String? @unique
   // O status vem direto do Stripe (ex: 'succeeded', 'processing'). 
   status                String
 
@@ -112,6 +115,8 @@ model Transacao {
 
   doacao   Doacao @relation(fields: [idDoacao], references: [id])
   idDoacao Int    @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Evento {

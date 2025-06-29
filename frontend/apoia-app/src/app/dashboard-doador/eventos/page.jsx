@@ -74,6 +74,7 @@ export default function DoadorPage() {
                   setSelectedOng(ong.id === selectedOng ? null : ong.id)
                 }
                 isSelected={ong.id === selectedOng}
+                isDoador={true} // Adicionado para esconder botões de edição/exclusão
               />
             ))}
           </div>
@@ -105,6 +106,7 @@ export default function DoadorPage() {
                     key={evento.id}
                     evento={evento}
                     ong={ong}
+                    isDoador={true} // Adicionado para esconder botões de edição/exclusão
                   />
                 );
               })}

@@ -66,7 +66,7 @@ export default function Hero() {
         <section className="relative z-10 flex flex-col items-center justify-center text-center text-white px-6 pt-18">
           <div className="max-w-5xl">
             <h3 className="text-white font-bold uppercase text-xl tracking-wider">
-              ONGS E DOADORES EM TODO MUNDO
+              ONGS E DOADORES EM TODA CAMAÇARI
             </h3>
             <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mt-4">
               <span className="text-blue-300">Conecte-se a ONGs</span> <br /> e
