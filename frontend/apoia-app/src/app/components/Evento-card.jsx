@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Heart } from "lucide-react"; // ✅ ÍCONE
 
 export function EventoCard({
   evento,
@@ -20,6 +21,7 @@ export function EventoCard({
   onDelete,
   ong,
   isDoador = false,
+  onInteresse,
 }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -33,7 +35,6 @@ export function EventoCard({
   return (
     <>
       {isDoador ? (
-        // Layout para DOADOR (sem botões Editar/Excluir)
         <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <img
             src={evento.imagemUrl || "/default-event.jpg"}
@@ -61,11 +62,19 @@ export function EventoCard({
             <p className="text-sm mb-1">
               📅 {formatDate(evento.data)} | 📍 {evento.local}
             </p>
-            <p className="text-sm text-gray-600">{evento.endereco}</p>
+            <p className="text-sm text-gray-600 mb-3">{evento.endereco}</p>
+
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => onInteresse(evento.id)}
+            >
+              <Heart className="w-4 h-4 text-red-500" /> Tenho interesse (
+              {evento.interessados?.length || 0})
+            </Button>
           </div>
         </div>
       ) : (
-        // Layout para ONG (com botões Editar/Excluir somente se NÃO for doador)
         <Card className="rounded-2xl bg-white hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">{evento.nome}</CardTitle>
@@ -78,7 +87,9 @@ export function EventoCard({
                 className="w-full h-40 object-cover rounded-lg mb-3"
               />
             )}
-            <p className="text-sm text-gray-600 line-clamp-3">{evento.descricao}</p>
+            <p className="text-sm text-gray-600 line-clamp-3">
+              {evento.descricao}
+            </p>
             <div className="grid grid-cols-2 gap-2 mt-3">
               <div>
                 <p className="text-xs text-gray-500">Data:</p>
@@ -92,7 +103,6 @@ export function EventoCard({
             <p className="text-xs text-gray-500">Endereço:</p>
             <p className="text-sm mb-3">{evento.endereco}</p>
 
-            {/* Botões só aparecem se NÃO for doador */}
             {!isDoador && (
               <div className="flex gap-2 mt-4 pt-3 border-t">
                 <Button
@@ -115,7 +125,6 @@ export function EventoCard({
         </Card>
       )}
 
-      {/* Dialog de Exclusão */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>

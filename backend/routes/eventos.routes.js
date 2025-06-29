@@ -12,6 +12,9 @@ router.get("/", async (req, res) => {
     const eventos = await prisma.evento.findMany({
       where: ongId ? { idOng: parseInt(ongId) } : undefined,
       orderBy: { data: "asc" },
+      include: {
+        interessados: true,
+      }
     });
 
     res.json(eventos);
@@ -91,6 +94,34 @@ router.delete("/:id", async (req, res) => {
       error: "Erro ao excluir evento",
       details: err.message,
     });
+  }
+});
+
+// POST /api/eventos/:id/interesse
+router.post("/:id/interesse", async (req, res) => {
+  const { id } = req.params;
+  const { idUsuario } = req.body;
+
+  if (!idUsuario) {
+    return res.status(400).json({ error: "ID do usuário é obrigatório" });
+  }
+
+  try {
+    // Cria interesse — garante unique pelo model
+    const interesse = await prisma.usuarioEvento.create({
+      data: {
+        idUsuario: parseInt(idUsuario),
+        idEvento: parseInt(id),
+      },
+    });
+
+    res.status(201).json(interesse);
+  } catch (err) {
+    if (err.code === 'P2002') {
+      // Erro Prisma unique constraint
+      return res.status(409).json({ error: "Usuário já demonstrou interesse" });
+    }
+    res.status(500).json({ error: "Erro ao registrar interesse", details: err.message });
   }
 });
 

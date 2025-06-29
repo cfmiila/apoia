@@ -56,6 +56,22 @@ export default function DoadorPage() {
     setShowDoacaoDialog(true);
   };
 
+  const handleInteresse = async (idEvento) => {
+    try {
+      await axios.post(`http://localhost:3100/api/eventos/${idEvento}/interesse`, {
+        idUsuario: 1, // ✅ Troque pelo ID real do usuário logado!
+      });
+      alert("Interesse registrado!");
+      fetchEventos(); // Atualiza contagem de interessados
+    } catch (err) {
+      if (err.response?.status === 409) {
+        alert("Você já marcou interesse neste evento.");
+      } else {
+        console.error(err);
+      }
+    }
+  };
+
   if (loading)
     return <div className="flex justify-center p-8">Carregando...</div>;
 
@@ -74,7 +90,7 @@ export default function DoadorPage() {
                   setSelectedOng(ong.id === selectedOng ? null : ong.id)
                 }
                 isSelected={ong.id === selectedOng}
-                isDoador={true} // Adicionado para esconder botões de edição/exclusão
+                isDoador={true}
               />
             ))}
           </div>
@@ -106,14 +122,14 @@ export default function DoadorPage() {
                     key={evento.id}
                     evento={evento}
                     ong={ong}
-                    isDoador={true} // Adicionado para esconder botões de edição/exclusão
+                    isDoador={true}
+                    onInteresse={handleInteresse}
                   />
                 );
               })}
           </div>
         </section>
 
-        {/* Dialog de Doação */}
         <DoacaoDialog
           open={showDoacaoDialog}
           onOpenChange={setShowDoacaoDialog}
