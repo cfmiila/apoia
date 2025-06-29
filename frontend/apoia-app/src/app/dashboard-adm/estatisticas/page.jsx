@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -14,52 +15,68 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const resumo = {
-  total: 1250,
-  valor: "R$87.500,00",
-};
-
-const categorias = [
-  { name: "Educação", value: 400 },
-  { name: "Saúde", value: 300 },
-  { name: "Meio Ambiente", value: 300 },
-  { name: "Animais", value: 200 },
-  { name: "Crianças e Idosos", value: 500 },
-];
-
-const tendencia = [
-  { mes: "Janeiro", doacoes: 100 },
-  { mes: "Fevereiro", doacoes: 200 },
-  { mes: "Março", doacoes: 350 },
-  { mes: "Abril", doacoes: 500 },
-  { mes: "Maio", doacoes: 700 },
-  { mes: "Junho", doacoes: 900 },
-];
-
-const mapa = [
-  { regiao: "Sudeste", total: 300 },
-  { regiao: "Nordeste", total: 250 },
-  { regiao: "Sul", total: 200 },
-  { regiao: "Norte", total: 150 },
-  { regiao: "Centro-Oeste", total: 100 },
-];
-
-const campanhas = [
-  "Doe Amor – R$ 15.000,00",
-  "Saúde para Todos – R$ 12.000,00",
-  "Eduque já – R$ 10.000,00",
-  "Ajude um Animal – R$ 9.500,00",
-  "Alimente Esperança – R$ 7.000,00",
-  "Contra o Frio – R$ 6.000,00",
-  "Transplante Vida – R$ 5.500,00",
-  "Somos do Futuro – R$ 5.000,00",
-  "Projeto Abrigo – R$ 5.000,00",
-  "Corrente do Bem – R$ 4.000,00",
-];
-
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 export default function EstatisticasAdm() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:3100/adm/estatisticas")
+      .then((res) => res.json())
+      .then((response) => {
+        console.log("Resposta recebida da API:", response);
+        const { success, data } = response;
+        if (success && data) {
+          setData(data);
+        } else {
+          console.error("Falha ao carregar estatísticas - Dados inválidos:", response);
+          setData(null);
+        }
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error("Erro ao carregar dados:", e);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <p>Carregando dados...</p>;
+  if (!data) return <p>Erro ao carregar dados.</p>;
+
+  const tendencia = (data.tendencia || []).map((item) => ({
+    mes: item.mes,
+    doacoes: Number(item.total),
+  }));
+
+  const categorias = (data.doacoesPorOng || []).map((item) => ({
+    name: item.ong,
+    value: Number(item.total),
+  }));
+
+  const campanhas = (data.campanhasTop || []).map(
+    (c) =>
+      `${c.nome} – ${Number(c.arrecadado).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      })}`
+  );
+
+  const mapa = (data.doacoesPorOng || []).map((item) => ({
+    regiao: item.ong,
+    total: Number(item.total),
+  }));
+
+  const crescimentoOngs = (data.crescimentoOngs || []).map((item) => ({
+    mes: item.mes,
+    total: Number(item.total),
+  }));
+
+  const crescimentoUsuarios = (data.crescimentoUsuarios || []).map((item) => ({
+    mes: item.mes,
+    total: Number(item.total),
+  }));
+
   return (
     <div className="space-y-8 p-4">
       <div>
@@ -69,75 +86,176 @@ export default function EstatisticasAdm() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-4 rounded-xl shadow col-span-1">
-          <h2 className="text-lg font-semibold mb-2">Resumo geral</h2>
-          <p>Total de Doações: {resumo.total}</p>
-          <p>Valor Arrecadado: {resumo.valor}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="bg-white p-4 rounded-xl shadow aspect-square flex flex-col justify-center items-center">
+          <h2 className="text-sm font-medium text-gray-500">Total de Doações</h2>
+          <p className="text-2xl font-bold text-indigo-600">{data.totalDoacoes}</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow col-span-1">
-          <h2 className="text-lg font-semibold mb-2">Tendência de doações:</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={tendencia}>
-              <XAxis dataKey="mes" />
-              <YAxis />
-              <Tooltip />
+        <div className="bg-white p-4 rounded-xl shadow aspect-square flex flex-col justify-center items-center">
+          <h2 className="text-sm font-medium text-gray-500">Valor Arrecadado</h2>
+          <p className="text-2xl font-bold text-green-600">
+            {data.valorArrecadado.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+          </p>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow aspect-square flex flex-col justify-center items-center">
+          <h2 className="text-sm font-medium text-gray-500">Campanhas Ativas</h2>
+          <p className="text-2xl font-bold text-orange-500">{data.campanhasAtivas}</p>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow aspect-square flex flex-col justify-center items-center">
+          <h2 className="text-sm font-medium text-gray-500">Total de ONGs cadastradas</h2>
+          <p className="text-2xl font-bold text-indigo-600">{data.totalOngs}</p>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow aspect-square flex flex-col justify-center items-center">
+          <h2 className="text-sm font-medium text-gray-500">Total de Usuários cadastrados</h2>
+          <p className="text-2xl font-bold text-indigo-600">{data.totalUsuarios}</p>
+        </div>
+      </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 p-6">
+        <div className="bg-gray-50 p-6 rounded-2xl shadow-lg">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Crescimento de ONGs</h2>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              data={crescimentoOngs}
+              margin={{ top: 40, right: 40, left: 20, bottom: 30 }}
+            >
+              <XAxis
+                dataKey="mes"
+                stroke="#4A5568"
+                tick={{ fontSize: 16, fill: "#4A5568" }}
+                label={{
+                  value: "Mês",
+                  position: "insideBottom",
+                  offset: -10,
+                  fill: "#4A5568",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              />
+              <YAxis
+                stroke="#4A5568"
+                tick={{ fontSize: 16, fill: "#4A5568" }}
+                label={{
+                  value: "Total",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#4A5568",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              />
+              <Tooltip
+                wrapperClassName="bg-white text-gray-700 p-4 rounded-lg shadow-md"
+                cursor={{ stroke: "#00C49F", strokeWidth: 1 }}
+                contentStyle={{ fontSize: "16px", fontWeight: "bold" }}
+              />
               <Line
                 type="monotone"
-                dataKey="doacoes"
-                stroke="#8884d8"
-                strokeWidth={2}
+                dataKey="total"
+                stroke="#00C49F"
+                strokeWidth={4}
+                dot={{ r: 6, fill: "#00C49F" }}
+                activeDot={{ r: 10, fill: "#008080" }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow col-span-1">
-          <h2 className="text-lg font-semibold mb-2">Categorias mais doadas</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={categorias}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={70}
-                label
-              >
-                {categorias.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
+        <div className="bg-gray-50 p-6 rounded-2xl shadow-lg">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Crescimento de Usuários</h2>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart
+              data={crescimentoUsuarios}
+              margin={{ top: 40, right: 50, left: 30, bottom: 40 }}
+            >
+              <XAxis
+                dataKey="mes"
+                stroke="#4A5568"
+                tick={{ fontSize: 16, fill: "#4A5568" }}
+                label={{
+                  value: "Mês",
+                  position: "insideBottom",
+                  offset: -15,
+                  fill: "#4A5568",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              />
+              <YAxis
+                stroke="#4A5568"
+                tick={{ fontSize: 16, fill: "#4A5568" }}
+                label={{
+                  value: "Total",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#4A5568",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              />
+              <Tooltip
+                wrapperClassName="bg-white text-gray-700 p-4 rounded-lg shadow-md"
+                cursor={{ stroke: "#FFBB28", strokeWidth: 1 }}
+                contentStyle={{ fontSize: "16px", fontWeight: "bold" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="#FFBB28"
+                strokeWidth={4}
+                dot={{ r: 6, fill: "#FFBB28" }}
+                activeDot={{ r: 10, fill: "#FFA500" }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
 
-        <div className="bg-white p-4 rounded-xl shadow col-span-1 lg:col-span-2">
-          <h2 className="text-lg font-semibold mb-2">
-            Campanhas de maior sucesso:
-          </h2>
-          <ol className="list-decimal pl-5 space-y-1">
-            {campanhas.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ol>
-        </div>
 
-        <div className="bg-white p-4 rounded-xl shadow col-span-1">
-          <h2 className="text-lg font-semibold mb-2">Mapa de doações</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={mapa}>
-              <XAxis dataKey="regiao" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="total" fill="#00C49F" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="bg-white p-4 rounded-xl shadow">
+        <h2 className="text-lg font-semibold mb-2">Doações por ONG</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={categorias}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+            >
+              {categorias.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+
+      <div className="bg-white p-4 rounded-xl shadow">
+        <h2 className="text-lg font-semibold mb-2">Mapa de doações por ONG</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={mapa}
+            margin={{ top: 20, right: 30, left: 10, bottom: 10 }}
+          >
+            <XAxis dataKey="regiao" stroke="#888" />
+            <YAxis stroke="#888" />
+            <Tooltip />
+            <Bar dataKey="total" fill="#00C49F" barSize={40} radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
