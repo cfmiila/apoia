@@ -437,6 +437,8 @@ const eventosRouter = require("./routes/eventos.routes");
 app.use("/api/eventos", eventosRouter);
 const pagamentosRouter = require("./routes/pagamento.routes");
 app.use("/api/pagamentos", pagamentosRouter);
+const dashboardOngRoutes = require("./routes/dashboardOng.routes");
+app.use("/api/dashboard", dashboardOngRoutes);
 
 if (require.main === module) {
   app.listen(port, () => {
