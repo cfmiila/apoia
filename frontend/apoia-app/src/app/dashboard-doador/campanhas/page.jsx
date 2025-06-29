@@ -14,8 +14,8 @@ export default function DoadorPage() {
   const [showDoacaoDialog, setShowDoacaoDialog] = useState(false);
   const [selectedCampanha, setSelectedCampanha] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // Novo estado para o termo de pesquisa
-  const [addressFilter, setAddressFilter] = useState(""); // Novo estado para o filtro de endereço
+  const [searchTerm, setSearchTerm] = useState(""); // Novo estado 
+
 
   // Efeito para carregar ONGs e Campanhas ao montar o componente
   useEffect(() => {
@@ -76,26 +76,8 @@ export default function DoadorPage() {
       );
     }
 
-    // 3. Filtra por endereço da ONG associada
-    if (addressFilter) {
-      const lowerCaseAddressFilter = addressFilter.toLowerCase();
-      currentCampanhas = currentCampanhas.filter((campanha) => {
-        const ong = ongs.find((o) => o.id === campanha.idOng);
-        if (!ong) return false; // Se a ONG não for encontrada, não inclui a campanha
-
-        // Concatena todos os campos de endereço da ONG para a pesquisa
-        const fullAddress = `${ong.logradouro || ""} ${ong.numero || ""} ${
-          ong.complemento || ""
-        } ${ong.bairro || ""} ${ong.cidade || ""} ${ong.estado || ""} ${
-          ong.cep || ""
-        }`.toLowerCase();
-
-        return fullAddress.includes(lowerCaseAddressFilter);
-      });
-    }
-
     return currentCampanhas;
-  }, [campanhas, selectedOng, searchTerm, addressFilter, ongs]); // Dependências do useMemo
+  }, [campanhas, selectedOng, searchTerm, ongs]); // Dependências do useMemo
 
   if (loading)
     return <div className="flex justify-center p-8">Carregando...</div>;
@@ -132,13 +114,6 @@ export default function DoadorPage() {
                 placeholder="Pesquisar campanhas por nome ou descrição..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Input
-                type="text"
-                placeholder="Filtrar por endereço da ONG..."
-                value={addressFilter}
-                onChange={(e) => setAddressFilter(e.target.value)}
                 className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

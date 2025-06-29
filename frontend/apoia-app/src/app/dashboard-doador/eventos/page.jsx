@@ -16,7 +16,6 @@ export default function DoadorPage() {
 
   // Estados para os filtros de Eventos
   const [searchTermEventos, setSearchTermEventos] = useState("");
-  const [addressFilterEventos, setAddressFilterEventos] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -113,25 +112,8 @@ export default function DoadorPage() {
       );
     }
 
-    // 3. Filtra por endereço da ONG associada
-    if (addressFilterEventos) {
-      const lowerCaseAddressFilter = addressFilterEventos.toLowerCase();
-      currentEventos = currentEventos.filter((evento) => {
-        const ong = ongs.find((o) => o.id === evento.idOng);
-        if (!ong) return false;
-
-        const fullAddress = `${ong.logradouro || ""} ${ong.numero || ""} ${
-          ong.complemento || ""
-        } ${ong.bairro || ""} ${ong.cidade || ""} ${ong.estado || ""} ${
-          ong.cep || ""
-        }`.toLowerCase();
-
-        return fullAddress.includes(lowerCaseAddressFilter);
-      });
-    }
-
     return currentEventos;
-  }, [eventos, selectedOng, searchTermEventos, addressFilterEventos, ongs]); // Dependências do useMemo para eventos
+  }, [eventos, selectedOng, searchTermEventos, ongs]); // Dependências do useMemo para eventos
 
   if (loading)
     return <div className="flex justify-center p-8">Carregando...</div>;
@@ -168,13 +150,6 @@ export default function DoadorPage() {
               placeholder="Pesquisar eventos por nome ou descrição..."
               value={searchTermEventos}
               onChange={(e) => setSearchTermEventos(e.target.value)}
-              className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Input
-              type="text"
-              placeholder="Filtrar eventos por endereço da ONG..."
-              value={addressFilterEventos}
-              onChange={(e) => setAddressFilterEventos(e.target.value)}
               className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
