@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,15 @@ export function CampanhaCard({
 }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const valorArrecadado = Number(campanha.valorArrecadado || campanha.arrecadado || 0);
+  // ✅ Agora soma doações se houver
+  const valorArrecadado =
+    campanha.doacoes?.reduce(
+      (total, doacao) => total + Number(doacao.valor || 0),
+      0
+    ) ||
+    Number(campanha.valorArrecadado || campanha.arrecadado || 0) ||
+    0;
+
   const meta = Number(campanha.meta || 0);
   const progress = meta > 0 ? Math.min(100, (valorArrecadado / meta) * 100) : 0;
 
@@ -42,7 +51,9 @@ export function CampanhaCard({
         // Layout para Doador
         <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <img
-            src={campanha.imageUrl || campanha.imagem || "/default-campaign.jpg"}
+            src={
+              campanha.imageUrl || campanha.imagem || "/default-campaign.jpg"
+            }
             alt={campanha.nome || campanha.titulo || "Campanha"}
             className="w-full h-48 object-cover"
           />
@@ -71,10 +82,19 @@ export function CampanhaCard({
                 <span>Arrecadado: {formatCurrency(valorArrecadado)}</span>
                 <span>Meta: {formatCurrency(meta)}</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <div className="flex items-center gap-2">
+                <Progress
+                  value={progress}
+                  className="h-2 overflow-hidden rounded-full bg-gray-800 [&>div]:bg-green-500"
+                />
+                <span className="text-xs">{progress.toFixed(1)}%</span>
+              </div>
             </div>
 
-            <Button  className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600" onClick={() => onDoarClick(campanha)}>
+            <Button
+              className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
+              onClick={() => onDoarClick(campanha)}
+            >
               Doar
             </Button>
           </div>
@@ -98,16 +118,18 @@ export function CampanhaCard({
             <p className="text-sm text-gray-600 line-clamp-3">
               {campanha.descricao}
             </p>
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <div>
-                <p className="text-xs text-gray-500">Meta:</p>
-                <p className="text-sm font-medium">{formatCurrency(meta)}</p>
+
+            <div className="mb-3">
+              <div className="flex justify-between text-sm mb-1">
+                <span>Arrecadado: {formatCurrency(valorArrecadado)}</span>
+                <span>Meta: {formatCurrency(meta)}</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-500">Arrecadado:</p>
-                <p className="text-sm font-medium">
-                  {formatCurrency(valorArrecadado)}
-                </p>
+              <div className="flex items-center gap-2">
+                <Progress
+                  value={progress}
+                  className="h-2 overflow-hidden rounded-full bg-gray-800 [&>div]:bg-green-500"
+                />
+                <span className="text-xs">{progress.toFixed(1)}%</span>
               </div>
             </div>
 

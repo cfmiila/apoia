@@ -144,12 +144,14 @@ export function DoacaoDialog({ open, onOpenChange, campanha, onSuccess }) {
                   onOpenChange(false);
                 }}
                 disabled={loading}
+                className="transition-all duration-200 ease-in-out hover:bg-gray-100 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-gray-700 bg-white"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={loading || !valor}
+                className="transition-all duration-200 ease-in-out hover:bg-blue-700 cursor-pointer border-1 border-gray-300 hover:border-gray-400 px-4 py-2 rounded-md text-white bg-blue-600"
               >
                 {loading ? (
                   <>
