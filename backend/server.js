@@ -8,7 +8,9 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
 
-const dashboardRoutes = require("./routes/adm/dashboardRoutes"); //WES
+
+
+
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const prisma = new PrismaClient();
@@ -22,6 +24,16 @@ app.use(
   })
 );
 const port = 3100;
+
+//ADM WESICLEY
+const validacaoRoutes = require('./routes/adm/validacao');
+
+app.use('/api/validacao', validacaoRoutes);
+
+const dashboardRoutes = require('./routes/adm/dashboardRoutes'); 
+
+const estatisticasRouter = require('./routes/adm/estatisticas.routes');//Wes
+app.use('/adm/estatisticas', estatisticasRouter);
 
 // rotas
 const loginDoadorRouter = require("./loginDoador");
