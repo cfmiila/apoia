@@ -97,29 +97,30 @@ export function Sidebar() {
             <MenuItem
               icon={<FaChartPie />}
               text="Painel"
-              href="/admin"
-              active={isActive("/admin")}
+              href="/dashboard-adm"
+              active={isActive("/dashboard-adm")}
             />
             <MenuItem
-              icon={<FaUsers />}
-              text="Gerenciar ONGs"
-              href="/admin/ongs"
-              active={isActive("/admin/ongs")}
+              icon={<FaClipboardList />}
+              text="Solicitações"
+              href="/dashboard-adm/solicitacoes"
+              active={isActive("/dashboard-adm/solicitacoes")}
             />
             <MenuItem
-              icon={<FaFileAlt />}
-              text="Relatórios"
-              href="/admin/relatorios"
-              active={isActive("/admin/relatorios")}
+              icon={<FaChartPie />}
+              text="Estatísticas"
+              href="/dashboard-adm/estatisticas"
+              active={isActive("/dashboard-adm/estatisticas")}
             />
             <MenuItem
               icon={<FaCog />}
               text="Configurações"
-              href="/admin/configuracoes"
-              active={isActive("/admin/configuracoes")}
+              href="/dashboard-adm/configuracoes"
+              active={isActive("/dashboard-adm/configuracoes")}
             />
           </>
         );
+
       case "doador":
         return (
           <>
@@ -163,10 +164,9 @@ function MenuItem({ icon, text, href, active }) {
     <Link href={href}>
       <div
         className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer 
-          ${
-            active
-              ? "text-blue-600 font-semibold bg-blue-100"
-              : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          ${active
+            ? "text-blue-600 font-semibold bg-blue-100"
+            : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
           }
         `}
       >

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 
 function DashboardCard({ title, content }) {
@@ -15,11 +17,13 @@ function DashboardCard({ title, content }) {
   );
 }
 
-export default function Dashboard() {
+function DashboardCards() {
   const [data, setData] = useState({
     totalOngs: 'Carregando...',
     totalUsuarios: 'Carregando...',
-    graficoDoacoes: <div className="h-24 flex items-center justify-center">Carregando gráfico...</div>,
+    totalCampanhasAtivas: 'Carregando...',
+    totalDoacoesRecebidas: 'Carregando...',
+    crescimentoOngsUsuarios: 'Carregando...',
   });
 
   useEffect(() => {
@@ -30,7 +34,9 @@ export default function Dashboard() {
           setData({
             totalOngs: json.counts.ongs,
             totalUsuarios: json.counts.usuarios,
-            graficoDoacoes: <div className="h-24 flex items-center justify-center">Gráfico aqui</div>,
+            totalCampanhasAtivas: json.counts.campanhas,
+            totalDoacoesRecebidas: json.counts.doacoes,
+            crescimentoOngsUsuarios: 'Não implementado',
           });
         } else {
           throw new Error();
@@ -38,36 +44,46 @@ export default function Dashboard() {
       })
       .catch(() => {
         setData({
-          totalOngs: 'Erro ao carregar',
-          totalUsuarios: 'Erro ao carregar',
-          graficoDoacoes: <div className="text-red-500">Erro no gráfico</div>,
+          totalOngs: 'Erro',
+          totalUsuarios: 'Erro',
+          totalCampanhasAtivas: 'Erro',
+          totalDoacoesRecebidas: 'Erro',
+          crescimentoOngsUsuarios: 'Erro',
         });
       });
   }, []);
 
+  const cards = [
+    { title: 'Total de ONGs cadastradas', value: data.totalOngs },
+    { title: 'Total de usuários registrados', value: data.totalUsuarios },
+    { title: 'Total de campanhas ativas', value: data.totalCampanhasAtivas },
+  ];
+
+  return (
+    <>
+      <p className="mb-6 text-gray-600 italic">
+        Resumo dos dados
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        {cards.map(({ title, value }, index) => (
+          <DashboardCard key={index} title={title} content={value} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default function DashboardAdm() {
   return (
     <div className="p-6">
-      {/* Cabeçalho */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <span className="text-gray-500">Esta semana</span>
       </div>
 
-      {/* Grid de cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <DashboardCard 
-          title="Total de ONGs cadastradas" 
-          content={data.totalOngs} 
-        />
-        <DashboardCard 
-          title="Total de usuários registrados" 
-          content={data.totalUsuarios} 
-        />
-        <DashboardCard 
-          title="Gráfico de doações" 
-          content={data.graficoDoacoes} 
-        />
-      </div>
+      <DashboardCards />
+
     </div>
   );
 }
