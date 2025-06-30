@@ -54,12 +54,6 @@ export function Sidebar() {
               href="/dashboard-ong/eventos"
               active={isActive("/dashboard-ong/eventos")}
             />
-            <MenuItem
-              icon={<FaCog />}
-              text="Configurações"
-              href="/dashboard-ong/configuracoes"
-              active={isActive("/dashboard-ong/configuracoes")}
-            />
           </>
         );
       case "parceiro":
@@ -82,12 +76,6 @@ export function Sidebar() {
               text="Eventos"
               href="/dashboard-doador/eventos"
               active={isActive("/dashboard-doador/eventos")}
-            />
-            <MenuItem
-              icon={<FaCog />}
-              text="Configurações"
-              href="/dashboard-doador/configuracoes"
-              active={isActive("/dashboard-doador/configuracoes")}
             />
           </>
         );
@@ -112,12 +100,6 @@ export function Sidebar() {
               href="/dashboard-adm/estatisticas"
               active={isActive("/dashboard-adm/estatisticas")}
             />
-            <MenuItem
-              icon={<FaCog />}
-              text="Configurações"
-              href="/dashboard-adm/configuracoes"
-              active={isActive("/dashboard-adm/configuracoes")}
-            />
           </>
         );
 
@@ -135,12 +117,6 @@ export function Sidebar() {
               text="Campanhas"
               href="/doador/campanhas"
               active={isActive("/doador/campanhas")}
-            />
-            <MenuItem
-              icon={<FaCog />}
-              text="Configurações"
-              href="/doador/configuracoes"
-              active={isActive("/doador/configuracoes")}
             />
           </>
         );
