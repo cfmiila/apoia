@@ -16,14 +16,15 @@ generator erd {
 model Endereco {
   id          Int     @id @default(autoincrement())
   cep         String
-  logradouro  String
+  logradouro  String?
   numero      String
   complemento String?
   bairro      String
   cidade      String
   estado      String
-
+  ongId       Int?      @unique
   ong     Ong?
+  usuarioId   Int?      @unique
   usuario Usuario?
 }
 

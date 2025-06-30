@@ -54,6 +54,12 @@ export function Sidebar() {
               href="/dashboard-ong/eventos"
               active={isActive("/dashboard-ong/eventos")}
             />
+            <MenuItem
+              icon={<FaCog />}
+              text="Configurações"
+              href="/dashboard-ong/configuracoes"
+              active={isActive("/dashboard-ong/configuracoes")}
+            />
           </>
         );
       case "parceiro":
@@ -140,9 +146,10 @@ function MenuItem({ icon, text, href, active }) {
     <Link href={href}>
       <div
         className={`flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer 
-          ${active
-            ? "text-blue-600 font-semibold bg-blue-100"
-            : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+          ${
+            active
+              ? "text-blue-600 font-semibold bg-blue-100"
+              : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
           }
         `}
       >

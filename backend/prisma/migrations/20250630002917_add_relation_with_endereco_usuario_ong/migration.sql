@@ -8,7 +8,11 @@ CREATE TABLE `Endereco` (
     `bairro` VARCHAR(191) NOT NULL,
     `cidade` VARCHAR(191) NOT NULL,
     `estado` VARCHAR(191) NOT NULL,
+    `ongId` INTEGER NULL,
+    `usuarioId` INTEGER NULL,
 
+    UNIQUE INDEX `Endereco_ongId_key`(`ongId`),
+    UNIQUE INDEX `Endereco_usuarioId_key`(`usuarioId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -87,8 +91,10 @@ CREATE TABLE `Doacao` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `valor` DECIMAL(10, 2) NOT NULL,
     `dataDoacao` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `status` VARCHAR(191) NOT NULL DEFAULT 'pendente',
     `idUsuario` INTEGER NOT NULL,
     `idCampanha` INTEGER NOT NULL,
+    `idTransacao` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -96,11 +102,13 @@ CREATE TABLE `Doacao` (
 -- CreateTable
 CREATE TABLE `Transacao` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `stripePaymentIntentId` VARCHAR(191) NOT NULL,
+    `stripePaymentIntentId` VARCHAR(191) NULL,
     `status` VARCHAR(191) NOT NULL,
     `metodoPagamento` ENUM('STRIPE') NOT NULL,
     `dataPagamento` DATETIME(3) NULL,
     `idDoacao` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Transacao_stripePaymentIntentId_key`(`stripePaymentIntentId`),
     UNIQUE INDEX `Transacao_idDoacao_key`(`idDoacao`),
@@ -113,6 +121,7 @@ CREATE TABLE `Evento` (
     `nome` VARCHAR(191) NOT NULL,
     `descricao` VARCHAR(191) NOT NULL,
     `data` DATETIME(3) NOT NULL,
+    `horario` VARCHAR(191) NOT NULL,
     `local` VARCHAR(191) NOT NULL,
     `endereco` VARCHAR(191) NOT NULL,
     `imagemUrl` VARCHAR(191) NULL,

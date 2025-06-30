@@ -1,7 +1,16 @@
-DATABASE_URL="mysql://usuario:senha@localhost:3306/nome_do_banco"
-SECRET_KEY=digite_uma_chave_secreta
-
 //para o banco de dados rodar é é necessário ter o mysql rodando na porta 3306
 // e para rodar o banco rode os seguintes comandos:
 // npx prisma generate
 // npx prisma migrate dev --name init
+
+
+DATABASE_URL="mysql://root:123456@localhost:3306/defaultDB"
+SECRET_KEY=minha_chave_super_secreta_123
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_51RfMHSP2SXvdgVMeqQ1cB1Cjyzv9wzy5LIl0SIKa6voKoE6bbS8jsnlOogTDYApp1XWGN32srJGIqaL1JzHIfcHq00Eor1ML2o
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51RfMHSP2SXvdgVMedVUKVROZQR7bSPQf1fUTHFClbcztEIA2cGmruTUCgbpNccDadgahHif4zXXg4sIT6l95SiWl00wdWnbtEH
+STRIPE_WEBHOOK_SECRET=whsec_sua_chave_aqui
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
