@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const puppeteer = require("puppeteer"); // Importa o puppeteer
 const fs = require("fs");
 const path = require("path");
-const { v4: uuidv4 } = require('uuid'); // Para gerar UUIDs se necessário
+const { v4: uuidv4 } = require("uuid"); // Para gerar UUIDs se necessário
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -30,7 +30,7 @@ router.post("/gerar/:idDoacao", async (req, res) => {
             ong: true,
           },
         },
-        certificado: true,
+        certificado: true, // Still include to potentially retrieve old info if needed, though we'll overwrite
       },
     });
 
@@ -38,35 +38,21 @@ router.post("/gerar/:idDoacao", async (req, res) => {
       return res.status(404).json({ error: "Doação não encontrada." });
     }
     if (doacao.status !== "concluido") {
-      return res.status(400).json({ error: "Certificado só pode ser gerado para doações concluídas." });
-    }
-
-    let certificadoExistente = doacao.certificado;
-    let urlCertificadoPdf = certificadoExistente?.urlCertificadoPdf;
-    let codigoVerificacao = certificadoExistente?.codigoVerificacao;
-
-    // Se o certificado já existe e tem uma URL, retorna-o para evitar regeração desnecessária
-    if (certificadoExistente && urlCertificadoPdf) {
-      console.log("Certificado já gerado, retornando URL existente.");
-      return res.status(200).json({
-        message: "Certificado já gerado.",
-        url: urlCertificadoPdf,
-        codigoVerificacao: codigoVerificacao,
+      return res.status(400).json({
+        error: "Certificado só pode ser gerado para doações concluídas.",
       });
     }
 
-    // Se não existe, gera um novo código de verificação
-    if (!codigoVerificacao) {
-      codigoVerificacao = uuidv4();
-    }
+    // Generate a new verification code every time
+    const codigoVerificacao = uuidv4();
 
     // --- Lógica de Geração do Certificado PDF com Puppeteer ---
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Necessário para ambientes de produção (Docker, VPS)
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
 
-    // Monta o HTML do certificado
+    // Mount the HTML for the certificate (this part remains the same)
     const certificateHtml = `
       <html lang="pt-BR">
       <head>
@@ -213,7 +199,11 @@ router.post("/gerar/:idDoacao", async (req, res) => {
               <div class="decorative-elements"></div>
               
               <div class="header">
-                  ${doacao.campanha.ong.imageUrl ? `<img src="${doacao.campanha.ong.imageUrl}" alt="${doacao.campanha.ong.nome} Logo" class="logo mx-auto">` : `<div class="title text-green-700">${doacao.campanha.ong.nome}</div>`}
+                  ${
+                    doacao.campanha.ong.imageUrl
+                      ? `<img src="${doacao.campanha.ong.imageUrl}" alt="${doacao.campanha.ong.nome} Logo" class="logo mx-auto">`
+                      : `<div class="title text-green-700">${doacao.campanha.ong.nome}</div>`
+                  }
                   <div class="title">Certificado de Impacto</div>
                   <div class="subtitle">Agradecemos sua generosidade e compromisso com o bem.</div>
               </div>
@@ -223,15 +213,27 @@ router.post("/gerar/:idDoacao", async (req, res) => {
                   <p class="recipient">${doacao.usuario.nome}</p>
                   <p class="declaration">
                       contribuiu com uma doação de 
-                      <span class="highlight">${formatCurrency(doacao.valor)}</span> 
-                      em ${new Date(doacao.dataDoacao).toLocaleDateString("pt-BR")} para a campanha 
-                      <span class="campaign-name">"${doacao.campanha.nome}"</span>.
+                      <span class="highlight">${formatCurrency(
+                        doacao.valor
+                      )}</span> 
+                      em ${new Date(doacao.dataDoacao).toLocaleDateString(
+                        "pt-BR"
+                      )} para a campanha 
+                      <span class="campaign-name">"${
+                        doacao.campanha.nome
+                      }"</span>.
                   </p>
                   <p class="declaration mt-4">
                       Sua generosidade faz a diferença! Com esta doação, você apoia 
                       as importantes iniciativas de 
-                      <span class="highlight">${doacao.campanha.ong.nome}</span>,
-                      contribuindo diretamente para ${doacao.descricaoImpacto || doacao.campanha.descricao || "o avanço de projetos sociais e ambientais cruciais para a comunidade."}
+                      <span class="highlight">${
+                        doacao.campanha.ong.nome
+                      }</span>,
+                      contribuindo diretamente para ${
+                        doacao.descricaoImpacto ||
+                        doacao.campanha.descricao ||
+                        "o avanço de projetos sociais e ambientais cruciais para a comunidade."
+                      }
                   </p>
               </div>
 
@@ -252,14 +254,14 @@ router.post("/gerar/:idDoacao", async (req, res) => {
     `;
 
     await page.setContent(certificateHtml, {
-      waitUntil: "networkidle0", // Espera a rede ficar ociosa
+      waitUntil: "networkidle0",
     });
 
-    // Caminho para salvar o PDF
-    const filename = `certificado_impacto_${doacao.id}.pdf`;
+    // Generate a unique filename for each certificate
+    const filename = `certificado_impacto_${doacao.id}_${Date.now()}.pdf`; // Added Date.now() for uniqueness
     const outputPath = path.join(__dirname, "../public/certificados", filename);
 
-    // Garante que a pasta existe
+    // Ensure the directory exists
     if (!fs.existsSync(path.dirname(outputPath))) {
       fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     }
@@ -267,26 +269,34 @@ router.post("/gerar/:idDoacao", async (req, res) => {
     await page.pdf({
       path: outputPath,
       format: "A4",
-      printBackground: true, // Inclui cores e imagens de fundo
+      printBackground: true,
     });
 
     await browser.close();
 
-    const publicUrl = `/public/certificados/${filename}`; // URL pública para acesso ao PDF
+    const publicUrl = `/public/certificados/${filename}`;
 
-    // Salva ou atualiza o certificado no banco de dados
+    // Save or update the certificate in the database
     const certificado = await prisma.certificadoImpacto.upsert({
       where: { idDoacao: doacao.id },
       update: {
         urlCertificadoPdf: publicUrl,
-        descricaoImpacto: doacao.descricaoImpacto || doacao.campanha.descricao || doacao.campanha.ong.descricao || "Esta doação contribui diretamente para as iniciativas sociais e ambientais desenvolvidas por nossa organização.",
+        descricaoImpacto:
+          doacao.descricaoImpacto ||
+          doacao.campanha.descricao ||
+          doacao.campanha.ong.descricao ||
+          "Esta doação contribui diretamente para as iniciativas sociais e ambientais desenvolvidas por nossa organização.",
         codigoVerificacao: codigoVerificacao,
         dataEmissao: new Date(),
       },
       create: {
         idDoacao: doacao.id,
         urlCertificadoPdf: publicUrl,
-        descricaoImpacto: doacao.descricaoImpacto || doacao.campanha.descricao || doacao.campanha.ong.descricao || "Esta doação contribui diretamente para as iniciativas sociais e ambientais desenvolvidas por nossa organização.",
+        descricaoImpacto:
+          doacao.descricaoImpacto ||
+          doacao.campanha.descricao ||
+          doacao.campanha.ong.descricao ||
+          "Esta doação contribui diretamente para as iniciativas sociais e ambientais desenvolvidas por nossa organização.",
         codigoVerificacao: codigoVerificacao,
       },
     });
@@ -326,7 +336,9 @@ router.get("/verificar/:codigo", async (req, res) => {
     });
 
     if (!certificado) {
-      return res.status(404).json({ error: "Certificado não encontrado ou inválido." });
+      return res
+        .status(404)
+        .json({ error: "Certificado não encontrado ou inválido." });
     }
 
     res.status(200).json(certificado);
