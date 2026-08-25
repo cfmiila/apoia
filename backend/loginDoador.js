@@ -29,7 +29,7 @@ router.post('/login/doador', async (req, res) => {
     }
 
   
-    if (usuario.tipo !== 'DOADOR') {
+    if (usuario.tipo !== 'parceiro') {
       return res.status(403).json({ error: 'Acesso permitido apenas para doadores' });
     }
 

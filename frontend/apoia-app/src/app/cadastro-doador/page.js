@@ -17,9 +17,7 @@ export default function CadastroDoador() {
     nome: "",
     email: "",
     senha: "",
-    telefone: "",
-    cnpj: "", 
-    descricao: "", 
+    cpf: "",
   });
 
   const [mensagem, setMensagem] = useState({ text: "", type: "" });
@@ -27,21 +25,14 @@ export default function CadastroDoador() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Formatação automática para CNPJ (14 dígitos)
-    if (name === "cnpj") {
-      const onlyNums = value.replace(/\D/g, "").slice(0, 14);
-      setFormData(prev => ({ ...prev, [name]: onlyNums }));
-      return;
-    }
-    
-    // Formatação automática para telefone (11 dígitos)
-    if (name === "telefone") {
+
+    // Formatação automática para CPF (11 dígitos)
+    if (name === "cpf") {
       const onlyNums = value.replace(/\D/g, "").slice(0, 11);
       setFormData(prev => ({ ...prev, [name]: onlyNums }));
       return;
     }
-    
+
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -62,41 +53,40 @@ export default function CadastroDoador() {
       return;
     }
 
+    if (!formData.cpf || formData.cpf.length !== 11) {
+      setMensagem({ text: "CPF inválido", type: "error" });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3100/ong/create", {
+      const response = await fetch("http://localhost:3100/usuario/create", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({
-          ...formData,
-          telefone: formData.telefone || null,
-          descricao: formData.descricao || null
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao cadastrar ONG");
+        throw new Error(data.error || "Erro ao cadastrar doador");
       }
 
       setMensagem({
-        text: "ONG cadastrada com sucesso!",
+        text: "Cadastro realizado com sucesso!",
         type: "success"
       });
-      
+
       // Reset form
       setFormData({
         nome: "",
         email: "",
         senha: "",
-        telefone: "",
-        cnpj: "",
-        descricao: "",
+        cpf: "",
       });
 
     } catch (error) {
@@ -149,7 +139,7 @@ export default function CadastroDoador() {
             type="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="exemplo@ong.org"
+            placeholder="exemplo@email.com"
             className="rounded-2xl"
             required
             aria-describedby="email-help"
@@ -175,62 +165,30 @@ export default function CadastroDoador() {
             Use 8+ caracteres com maiúsculas, minúsculas, números e símbolos
           </p>
 
-          <Label htmlFor="telefone-input" className="text-lg font-light">
-            Telefone
+          <Label htmlFor="cpf-input" className="text-lg font-light" aria-required="true">
+            CPF*
           </Label>
           <Input
-            id="telefone-input"
-            name="telefone"
-            type="tel"
-            value={formData.telefone}
-            onChange={handleChange}
-            placeholder="(00) 00000-0000"
-            className="rounded-2xl"
-            pattern="[0-9]{10,11}"
-            aria-describedby="telefone-help"
-          />
-          <p id="telefone-help" className="text-sm text-gray-500 -mt-2">Apenas números, com DDD</p>
-
-          <Label htmlFor="cnpj-input" className="text-lg font-light" aria-required="true">
-            CNPJ*
-          </Label>
-          <Input
-            id="cnpj-input"
-            name="cnpj"
+            id="cpf-input"
+            name="cpf"
             type="text"
-            value={formData.cnpj}
+            value={formData.cpf}
             onChange={handleChange}
-            placeholder="00.000.000/0000-00"
+            placeholder="000.000.000-00"
             className="rounded-2xl"
             required
-            minLength={14}
-            maxLength={14}
-            pattern="\d{14}"
-            aria-describedby="cnpj-help"
+            minLength={11}
+            maxLength={11}
+            pattern="\d{11}"
+            aria-describedby="cpf-help"
           />
-          <p id="cnpj-help" className="text-sm text-gray-500 -mt-2">14 dígitos, apenas números</p>
+          <p id="cpf-help" className="text-sm text-gray-500 -mt-2">11 dígitos, apenas números</p>
 
-          <Label htmlFor="descricao-input" className="text-lg font-light">
-            Descrição da ONG
-          </Label>
-          <Input
-            id="descricao-input"
-            name="descricao"
-            type="text"
-            value={formData.descricao}
-            onChange={handleChange}
-            placeholder="Conte sobre sua organização"
-            className="rounded-2xl"
-            maxLength={500}
-            aria-describedby="descricao-help"
-          />
-          <p id="descricao-help" className="text-sm text-gray-500 -mt-2">Máximo 500 caracteres</p>
-
-          <Button 
+          <Button
             type="submit" 
             className="bg-blue-600 text-white p-3 rounded-2xl hover:bg-blue-700 transition-colors disabled:opacity-70 mt-4"
             disabled={isLoading}
-            aria-label={isLoading ? "Cadastrando ONG..." : "Cadastrar ONG"}
+            aria-label={isLoading ? "Cadastrando doador..." : "Cadastrar doador"}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">

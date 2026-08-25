@@ -16,6 +16,8 @@ app.use(cors({
 }));
 const port = 3100;
 
+app.use(express.json());
+
 // rotas
 const loginDoadorRouter = require('./loginDoador');
 const loginOngRouter = require('./loginOng');
@@ -24,8 +26,6 @@ app.use(loginOngRouter);
 
 const cadastroONGRouter=require('./cadastroOng');
 app.use(cadastroONGRouter);
-
-app.use(express.json());
 
 
 app.get('/', (req, res) => {

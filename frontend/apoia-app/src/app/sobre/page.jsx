@@ -1,17 +1,13 @@
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import Link from "next/link";
-  
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
   export default function SobrePage() {
     return (
       <div className="min-h-screen">
         {/* Seção Missão, Visão e Valores */}
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold text-center mb-8 text-blue-600">Sobre o ConectaDoar</h1>
+            <h1 className="text-4xl font-bold text-center mb-8 text-blue-600">Sobre o Apoia+</h1>
             
             <div className="grid md:grid-cols-3 gap-8">
               {/* Card Missão */}

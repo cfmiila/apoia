@@ -8,7 +8,7 @@ const request = supertest(app); // Configura o Supertest com o app
 describe('Testes para o endpoint /ong/create', () => {
   // Limpa o banco de dados antes de cada teste
   beforeEach(async () => {
-    await prisma.Ong.deleteMany(); // Certifique-se de que "Ong" é o nome correto do modelo
+    await prisma.ong.deleteMany();
   });
 
   // Teste 1: CNPJ inválido (não tem 14 caracteres ou não é numérico)

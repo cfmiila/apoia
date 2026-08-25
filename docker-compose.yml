@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Se você quiser que o Docker crie o banco de dados para você, descomente as linhas abaixo:
+  # database:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_USER: apoia_user
+  #     POSTGRES_PASSWORD: apoia_password
+  #     POSTGRES_DB: apoia_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3100:3100" # Mapeia a porta 3100 do seu server.js
+    # volumes:
+    #   - ./backend:/app
+    #   - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - SECRET_KEY=sua_chave_secreta_aqui_para_o_jwt
+      # Se usar o banco do docker, a URL seria essa aqui embaixo:
+      # - DATABASE_URL=postgresql://apoia_user:apoia_password@database:5432/apoia_db?schema=public
+    # depends_on:
+    #   - database
+
+  frontend:
+    build:
+      context: ./frontend/apoia-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/apoia-app:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+
+# volumes:
+#   postgres_data:
